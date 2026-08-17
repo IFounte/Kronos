@@ -2024,32 +2024,56 @@ body.fullscreen-mode .timer-container.running .timer-ring-display::after {
     
     /* Fullscreen Mode on Mobile */
     body.fullscreen-mode .sidebar {
-        transform: translateY(100%);
-        opacity: 0;
+        display: none !important;
     }
     body.fullscreen-mode .main-content {
-        height: 100vh;
+        height: 100vh !important;
+        width: 100% !important;
     }
     
     body.fullscreen-mode #tab-clock .time-hours,
     body.fullscreen-mode #tab-clock .time-minutes {
-        font-size: calc(7rem * var(--clock-scale, 1));
+        font-size: calc(6rem * var(--clock-scale, 1)) !important;
     }
     body.fullscreen-mode #tab-clock .time-separator {
-        font-size: calc(6rem * var(--clock-scale, 1));
+        font-size: calc(5rem * var(--clock-scale, 1)) !important;
     }
     body.fullscreen-mode #tab-clock .time-seconds-small {
-        font-size: calc(2rem * var(--clock-scale, 1));
+        font-size: calc(1.8rem * var(--clock-scale, 1)) !important;
     }
     
+    /* Stopwatch Fullscreen (Paused & Running) */
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    body.fullscreen-mode #tab-stopwatch .stopwatch-display,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display {
+        width: 100% !important;
+        justify-content: center !important;
+        align-items: baseline !important;
+        margin: 0 auto !important;
+    }
+
     body.fullscreen-mode #tab-stopwatch .sw-minutes,
-    body.fullscreen-mode #tab-stopwatch .sw-seconds {
-        font-size: calc(6rem * var(--clock-scale, 1));
+    body.fullscreen-mode #tab-stopwatch .sw-seconds,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-minutes,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-seconds {
+        font-size: calc(4.5rem * var(--clock-scale, 1)) !important;
     }
-    body.fullscreen-mode #tab-stopwatch .sw-separator {
-        font-size: calc(5.5rem * var(--clock-scale, 1));
+
+    body.fullscreen-mode #tab-stopwatch .sw-separator,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-separator {
+        font-size: calc(4rem * var(--clock-scale, 1)) !important;
     }
-    body.fullscreen-mode #tab-stopwatch .sw-ms {
-        font-size: calc(2.5rem * var(--clock-scale, 1));
+
+    body.fullscreen-mode #tab-stopwatch .sw-ms,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-ms {
+        font-size: calc(2rem * var(--clock-scale, 1)) !important;
+        min-width: auto !important;
+        width: auto !important;
+        margin-left: 2px !important;
     }
 }
