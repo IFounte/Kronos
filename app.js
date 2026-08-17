@@ -360,9 +360,30 @@ function swLap() {
 
 function updateSwDisplay() {
     const totalMs = state.swElapsed;
-    const minutes = Math.floor(totalMs / 60000);
+    const hours = Math.floor(totalMs / 3600000);
+    const minutes = Math.floor((totalMs % 3600000) / 60000);
     const seconds = Math.floor((totalMs % 60000) / 1000);
     const ms = Math.floor((totalMs % 1000) / 10);
+    
+    const swHoursEl = document.getElementById('swHours');
+    const swHourSepEl = document.getElementById('swHourSep');
+    
+    if (hours > 0) {
+        if (swHoursEl) {
+            swHoursEl.style.display = '';
+            swHoursEl.textContent = String(hours).padStart(2, '0');
+        }
+        if (swHourSepEl) {
+            swHourSepEl.style.display = '';
+        }
+    } else {
+        if (swHoursEl) {
+            swHoursEl.style.display = 'none';
+        }
+        if (swHourSepEl) {
+            swHourSepEl.style.display = 'none';
+        }
+    }
     
     document.getElementById('swMinutes').textContent = String(minutes).padStart(2, '0');
     document.getElementById('swSeconds').textContent = String(seconds).padStart(2, '0');
@@ -403,9 +424,14 @@ function renderLaps() {
 }
 
 function formatMs(ms) {
-    const m = Math.floor(ms / 60000);
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
     const s = Math.floor((ms % 60000) / 1000);
     const cs = Math.floor((ms % 1000) / 10);
+    
+    if (h > 0) {
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
+    }
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
 }
 

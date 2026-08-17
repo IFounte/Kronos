@@ -748,6 +748,7 @@ body.sidebar-hidden .main-content {
 body.no-gradient .time-hours,
 body.no-gradient .time-minutes,
 body.no-gradient .time-seconds-small,
+body.no-gradient .sw-hours,
 body.no-gradient .sw-minutes,
 body.no-gradient .sw-seconds,
 body.no-gradient .sw-ms,
@@ -909,6 +910,7 @@ body.no-blink-colon .time-separator {
     transform: scale(0.98);
 }
 
+.sw-hours,
 .sw-minutes,
 .sw-seconds {
     font-family: var(--font-display);
