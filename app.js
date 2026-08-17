@@ -52,6 +52,9 @@ const themes = [
     { id: 'forest-nature', name: '🌲 Orman', color1: '#2d5a27', color2: '#1a3a18' },
     { id: 'desert-nature', name: '🏜️ Çöl', color1: '#c2956b', color2: '#8b6914' },
     { id: 'snowy-nature', name: '❄️ Karlı', color1: '#b8d4e8', color2: '#7a9bb5' },
+    { id: 'beach-nature', name: '🏖️ Plaj', color1: '#38bdf8', color2: '#f59e0b' },
+    { id: 'night-nature', name: '🌌 Gece', color1: '#a78bfa', color2: '#38bdf8' },
+    { id: 'rain-nature', name: '🌧️ Yağmur', color1: '#0284c7', color2: '#64748b' },
 ];
 
 // ── Fonts ──
@@ -76,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderThemes();
     renderFonts();
     startClock();
+    if (state.currentTheme === 'rain-nature') initRainAnimation();
     
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
@@ -670,12 +674,52 @@ function setTheme(themeId, save = true) {
         document.documentElement.setAttribute('data-theme', themeId);
     }
     
+    // Handle Rain Animation
+    if (themeId === 'rain-nature') {
+        initRainAnimation();
+    } else {
+        const container = document.getElementById('rainOverlay');
+        if (container) container.innerHTML = '';
+    }
+    
     // Update active state
     document.querySelectorAll('.theme-card').forEach(card => {
         card.classList.toggle('active', card.dataset.themeId === themeId);
     });
     
     if (save) saveSettings();
+}
+
+function initRainAnimation() {
+    const container = document.getElementById('rainOverlay');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Create falling rain streaks
+    for (let i = 0; i < 40; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'rain-drop';
+        drop.style.left = (Math.random() * 100) + '%';
+        drop.style.animationDuration = (0.4 + Math.random() * 0.4) + 's';
+        drop.style.animationDelay = (Math.random() * 2) + 's';
+        drop.style.height = (40 + Math.random() * 60) + 'px';
+        drop.style.opacity = (0.2 + Math.random() * 0.5).toString();
+        container.appendChild(drop);
+    }
+
+    // Create sliding glass droplets
+    for (let i = 0; i < 30; i++) {
+        const droplet = document.createElement('div');
+        droplet.className = 'glass-droplet';
+        droplet.style.left = (Math.random() * 100) + '%';
+        droplet.style.top = (Math.random() * 85) + '%';
+        const size = 3 + Math.random() * 5;
+        droplet.style.width = size + 'px';
+        droplet.style.height = size + 'px';
+        droplet.style.animationDuration = (4 + Math.random() * 7) + 's';
+        droplet.style.animationDelay = (Math.random() * 5) + 's';
+        container.appendChild(droplet);
+    }
 }
 
 function renderFonts() {

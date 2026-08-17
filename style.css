@@ -318,17 +318,159 @@
 }
 [data-theme="snowy-nature"] .ambient-glow, [data-theme="snowy-nature"] .ambient-glow-2 { display: none; }
 
+/* ── Theme: Beach Nature ── */
+[data-theme="beach-nature"] {
+    --bg-primary: #0d1b2a;
+    --bg-secondary: rgba(18, 38, 58, 0.7);
+    --bg-tertiary: rgba(27, 54, 82, 0.8);
+    --bg-card: rgba(13, 27, 42, 0.6);
+    --bg-card-hover: rgba(22, 45, 70, 0.8);
+    --border: rgba(56, 189, 248, 0.15);
+    --border-hover: rgba(56, 189, 248, 0.3);
+    --text-primary: #e0f2fe;
+    --text-secondary: rgba(224, 242, 254, 0.7);
+    --accent: #38bdf8;
+    --accent-hover: #7dd3fc;
+    --accent-glow: rgba(56, 189, 248, 0.3);
+    --accent-soft: rgba(56, 189, 248, 0.15);
+    --accent-secondary: #f59e0b;
+    --glow-1: rgba(56, 189, 248, 0.1);
+    --glow-2: rgba(245, 158, 11, 0.08);
+}
+[data-theme="beach-nature"] body {
+    background-image: url('assets/beach_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="beach-nature"] .ambient-glow, [data-theme="beach-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Night Nature ── */
+[data-theme="night-nature"] {
+    --bg-primary: #060814;
+    --bg-secondary: rgba(14, 18, 36, 0.7);
+    --bg-tertiary: rgba(22, 28, 54, 0.8);
+    --bg-card: rgba(10, 14, 28, 0.6);
+    --bg-card-hover: rgba(18, 24, 48, 0.8);
+    --border: rgba(167, 139, 250, 0.15);
+    --border-hover: rgba(167, 139, 250, 0.3);
+    --text-primary: #ede9fe;
+    --text-secondary: rgba(237, 233, 254, 0.7);
+    --accent: #a78bfa;
+    --accent-hover: #c084fc;
+    --accent-glow: rgba(167, 139, 250, 0.3);
+    --accent-soft: rgba(167, 139, 250, 0.15);
+    --accent-secondary: #38bdf8;
+    --glow-1: rgba(167, 139, 250, 0.1);
+    --glow-2: rgba(56, 189, 248, 0.08);
+}
+[data-theme="night-nature"] body {
+    background-image: url('assets/night_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="night-nature"] .ambient-glow, [data-theme="night-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Rain Nature ── */
+[data-theme="rain-nature"] {
+    --bg-primary: #0a1218;
+    --bg-secondary: rgba(16, 26, 36, 0.7);
+    --bg-tertiary: rgba(24, 38, 52, 0.8);
+    --bg-card: rgba(12, 20, 28, 0.6);
+    --bg-card-hover: rgba(20, 32, 44, 0.8);
+    --border: rgba(56, 189, 248, 0.15);
+    --border-hover: rgba(56, 189, 248, 0.3);
+    --text-primary: #e2e8f0;
+    --text-secondary: rgba(226, 232, 240, 0.7);
+    --accent: #38bdf8;
+    --accent-hover: #7dd3fc;
+    --accent-glow: rgba(56, 189, 248, 0.3);
+    --accent-soft: rgba(56, 189, 248, 0.15);
+    --accent-secondary: #94a3b8;
+    --glow-1: rgba(56, 189, 248, 0.1);
+    --glow-2: rgba(148, 163, 184, 0.08);
+}
+[data-theme="rain-nature"] body {
+    background-image: url('assets/rain_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="rain-nature"] .ambient-glow, [data-theme="rain-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Rain Droplets Overlay ── */
+.rain-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    display: none;
+}
+
+[data-theme="rain-nature"] .rain-overlay {
+    display: block;
+}
+
+.rain-drop {
+    position: absolute;
+    top: -100px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45));
+    width: 1px;
+    opacity: 0.5;
+    animation: dropFall linear infinite;
+}
+
+@keyframes dropFall {
+    0% { transform: translateY(-100px); }
+    100% { transform: translateY(110vh); }
+}
+
+.glass-droplet {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    box-shadow: inset -1px -1px 2px rgba(255, 255, 255, 0.7), inset 1px 1px 2px rgba(0, 0, 0, 0.4);
+    animation: dropletSlide ease-in infinite;
+}
+
+@keyframes dropletSlide {
+    0% { transform: translateY(0) scaleY(1); opacity: 0; }
+    20% { opacity: 0.85; }
+    80% { opacity: 0.85; }
+    100% { transform: translateY(140px) scaleY(1.4); opacity: 0; }
+}
+
 /* ── Reset & Base ── */
 *, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, select, textarea, .nav-btn, .control-btn, .fullscreen-btn, .time-display, .stopwatch-display, .timer-ring-container, .timer-ring-display {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    outline: none !important;
+}
+
+button:focus, button:active, button:focus-visible,
+a:focus, a:active, a:focus-visible {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
 }
 
 html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -339,6 +481,9 @@ body {
     display: flex;
     overflow: hidden;
     transition: background var(--transition-slow), color var(--transition-slow);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
@@ -1809,23 +1954,6 @@ body.fullscreen-mode #tab-stopwatch:has(.stopwatch-container.running) .fullscree
     transition: opacity 0.3s ease;
 }
 
-/* Hint: click to pause */
-body.fullscreen-mode .stopwatch-container.running .stopwatch-display::after {
-    content: 'tıkla → duraklat';
-    display: block;
-    position: absolute;
-    bottom: -60px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-main);
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    opacity: 0;
-    animation: hintFadeIn 1s ease 1.5s forwards;
-}
-
 body.fullscreen-mode .stopwatch-container.running .stopwatch-display {
     position: relative;
 }
@@ -1865,20 +1993,6 @@ body.fullscreen-mode #tab-timer:has(.timer-container.running) .fullscreen-btn {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-}
-
-/* Hint: click to pause */
-body.fullscreen-mode .timer-container.running .timer-ring-display::after {
-    content: 'tıkla → duraklat';
-    display: block;
-    font-family: var(--font-main);
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 8px;
-    opacity: 0;
-    animation: hintFadeIn 1s ease 1.5s forwards;
 }
 
 @keyframes hintFadeIn {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kronos-v3';
+const CACHE_NAME = 'kronos-v6';
 const ASSETS = [
     './',
     './index.html',
@@ -8,6 +8,9 @@ const ASSETS = [
     './assets/forest_bg.png',
     './assets/desert_bg.png',
     './assets/snowy_bg.png',
+    './assets/beach_bg.png',
+    './assets/night_bg.png',
+    './assets/rain_bg.png',
     './assets/icon-192.png',
     './assets/icon-512.png'
 ];
