@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kronos-v6';
+const CACHE_NAME = 'kronos-v42';
 const ASSETS = [
     './',
     './index.html',

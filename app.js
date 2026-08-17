@@ -9,9 +9,14 @@ const state = {
     showAnalog: false,
     showSeconds: true,
     showMilliseconds: true,
+    showGreeting: true,
+    showDate: true,
+    blinkColon: true,
     clockScale: 1,
     sidebarMode: 'full',
-    currentTheme: 'midnight-obsidian',
+    currentTheme: 'custom',
+    customBg: '#0a0a0f',
+    customAccent: '#6366f1',
     currentFont: 'inter',
     // Stopwatch
     swRunning: false,
@@ -39,16 +44,7 @@ const state = {
 
 // ── Themes ──
 const themes = [
-    { id: 'midnight-obsidian', name: 'Gece Obsidyeni', color1: '#6366f1', color2: '#a78bfa' },
-    { id: 'cyber-neon', name: 'Siber Neon', color1: '#00ffaa', color2: '#00d4ff' },
-    { id: 'crimson-night', name: 'Kızıl Gece', color1: '#ef4444', color2: '#fb923c' },
-    { id: 'aurora', name: 'Aurora', color1: '#8b5cf6', color2: '#06b6d4' },
-    { id: 'golden-hour', name: 'Altın Saat', color1: '#f59e0b', color2: '#d97706' },
-    { id: 'arctic-storm', name: 'Kutup Fırtınası', color1: '#38bdf8', color2: '#818cf8' },
-    { id: 'rose-quartz', name: 'Gül Kuvarsı', color1: '#ec4899', color2: '#a78bfa' },
-    { id: 'forest-shadow', name: 'Orman Gölgesi', color1: '#22c55e', color2: '#a3e635' },
-    { id: 'sunset-blaze', name: 'Gün Batımı', color1: '#f97316', color2: '#ef4444' },
-    { id: 'lavender-mist', name: 'Lavanta Sisi', color1: '#c084fc', color2: '#f0abfc' },
+    { id: 'custom', name: '🎨 Özel Renkler', color1: '#6366f1', color2: '#a78bfa' },
     { id: 'forest-nature', name: '🌲 Orman', color1: '#2d5a27', color2: '#1a3a18' },
     { id: 'desert-nature', name: '🏜️ Çöl', color1: '#c2956b', color2: '#8b6914' },
     { id: 'snowy-nature', name: '❄️ Karlı', color1: '#b8d4e8', color2: '#7a9bb5' },
@@ -59,14 +55,24 @@ const themes = [
 
 // ── Fonts ──
 const fonts = [
-    { id: 'inter', name: 'Inter', family: "'Inter', sans-serif", display: "'Inter'" },
-    { id: 'outfit', name: 'Outfit', family: "'Outfit', sans-serif", display: "'Outfit'" },
-    { id: 'orbitron', name: 'Orbitron', family: "'Orbitron', sans-serif", display: "'Orbitron'" },
-    { id: 'roboto-mono', name: 'Roboto Mono', family: "'Roboto Mono', monospace", display: "'Roboto Mono'" },
-    { id: 'jetbrains-mono', name: 'JetBrains Mono', family: "'JetBrains Mono', monospace", display: "'JetBrains Mono'" },
-    { id: 'space-mono', name: 'Space Mono', family: "'Space Mono', monospace", display: "'Space Mono'" },
-    { id: 'fira-code', name: 'Fira Code', family: "'Fira Code', monospace", display: "'Fira Code'" },
-    { id: 'source-code-pro', name: 'Source Code Pro', family: "'Source Code Pro', monospace", display: "'Source Code Pro'" },
+    { id: 'inter', name: 'Inter (Modern & Sade)', family: "'Inter', sans-serif" },
+    { id: 'outfit', name: 'Outfit (Şık & Yuvarlak)', family: "'Outfit', sans-serif" },
+    { id: 'orbitron', name: 'Orbitron (Fütüristik Dijital)', family: "'Orbitron', sans-serif" },
+    { id: 'syne', name: 'Syne (Avangart & Kalın)', family: "'Syne', sans-serif" },
+    { id: 'bebas-neue', name: 'Bebas Neue (Uzun & Güçlü)', family: "'Bebas Neue', sans-serif" },
+    { id: 'righteous', name: 'Righteous (Retro Synthwave)', family: "'Righteous', cursive" },
+    { id: 'cinzel', name: 'Cinzel (Klasik & Asil)', family: "'Cinzel', serif" },
+    { id: 'comfortaa', name: 'Comfortaa (Yumuşak & Minimal)', family: "'Comfortaa', cursive" },
+    { id: 'montserrat', name: 'Montserrat (Geometrik Netlik)', family: "'Montserrat', sans-serif" },
+    { id: 'playfair', name: 'Playfair Display (Zarif & Lüks)', family: "'Playfair Display', serif" },
+    { id: 'plus-jakarta', name: 'Plus Jakarta Sans (Temiz UI)', family: "'Plus Jakarta Sans', sans-serif" },
+    { id: 'silkscreen', name: 'Silkscreen (8-Bit Piksel Arcade)', family: "'Silkscreen', cursive" },
+    { id: 'share-tech-mono', name: 'Share Tech Mono (Terminal Konsol)', family: "'Share Tech Mono', monospace" },
+    { id: 'roboto-mono', name: 'Roboto Mono (Düzenli Monospace)', family: "'Roboto Mono', monospace" },
+    { id: 'jetbrains-mono', name: 'JetBrains Mono (Kod & Hassasiyet)', family: "'JetBrains Mono', monospace" },
+    { id: 'space-mono', name: 'Space Mono (Teknik & Geniş)', family: "'Space Mono', monospace" },
+    { id: 'fira-code', name: 'Fira Code (Modern Monospace)', family: "'Fira Code', monospace" },
+    { id: 'source-code-pro', name: 'Source Code Pro (Profesyonel)', family: "'Source Code Pro', monospace" },
 ];
 
 // ═══════════════════════════════════════
@@ -79,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderThemes();
     renderFonts();
     startClock();
-    if (state.currentTheme === 'rain-nature') initRainAnimation();
     
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
@@ -95,17 +100,28 @@ function loadSettings() {
     const saved = localStorage.getItem('kronos-settings');
     if (saved) {
         const s = JSON.parse(saved);
-        if (s.theme) setTheme(s.theme, false);
+        if (s.customBg) state.customBg = s.customBg;
+        if (s.customAccent) state.customAccent = s.customAccent;
+        if (s.theme) {
+            applyThemeColors(s.theme, state.customBg, state.customAccent, false);
+        } else {
+            applyThemeColors('custom', state.customBg, state.customAccent, false);
+        }
         if (s.font) setFont(s.font, false);
         if (s.timeFormat) setTimeFormat(s.timeFormat, false);
         if (s.showAnalog !== undefined) toggleAnalog(s.showAnalog, false);
         if (s.showSeconds !== undefined) toggleSeconds(s.showSeconds, false);
         if (s.showMilliseconds !== undefined) toggleMilliseconds(s.showMilliseconds, false);
+        if (s.showGreeting !== undefined) toggleGreeting(s.showGreeting, false);
+        if (s.showDate !== undefined) toggleDate(s.showDate, false);
+        if (s.blinkColon !== undefined) toggleBlinkColon(s.blinkColon, false);
         if (s.clockScale !== undefined) setClockSize(s.clockScale, false);
         if (s.sidebarMode) setSidebarMode(s.sidebarMode, false);
         if (s.focusSessions) state.focusSessions = s.focusSessions;
         if (s.focusTotalMinutes) state.focusTotalMinutes = s.focusTotalMinutes;
         if (s.focusStreak) state.focusStreak = s.focusStreak;
+    } else {
+        setTheme('custom', false);
     }
     updateFocusStats();
 }
@@ -113,11 +129,16 @@ function loadSettings() {
 function saveSettings() {
     localStorage.setItem('kronos-settings', JSON.stringify({
         theme: state.currentTheme,
+        customBg: state.customBg,
+        customAccent: state.customAccent,
         font: state.currentFont,
         timeFormat: state.timeFormat,
         showAnalog: state.showAnalog,
         showSeconds: state.showSeconds,
         showMilliseconds: state.showMilliseconds,
+        showGreeting: state.showGreeting,
+        showDate: state.showDate,
+        blinkColon: state.blinkColon,
         clockScale: state.clockScale,
         sidebarMode: state.sidebarMode,
         focusSessions: state.focusSessions,
@@ -523,6 +544,7 @@ function focusToggle() {
 
 function focusStart() {
     state.focusRunning = true;
+    document.querySelector('.focus-container')?.classList.add('running');
     const startTime = performance.now();
     const startRemaining = state.focusRemaining;
     
@@ -546,6 +568,7 @@ function focusStart() {
 
 function focusPause() {
     state.focusRunning = false;
+    document.querySelector('.focus-container')?.classList.remove('running');
     clearInterval(state.focusInterval);
     
     document.getElementById('focusPlayIcon').style.display = 'block';
@@ -555,6 +578,7 @@ function focusPause() {
 
 function focusReset() {
     state.focusRunning = false;
+    document.querySelector('.focus-container')?.classList.remove('running');
     clearInterval(state.focusInterval);
     
     state.focusRemaining = state.focusDuration * 60;
@@ -576,6 +600,7 @@ function focusSkip() {
 function focusComplete() {
     clearInterval(state.focusInterval);
     state.focusRunning = false;
+    document.querySelector('.focus-container')?.classList.remove('running');
     
     if (!state.focusIsBreak) {
         // Completed a focus session
@@ -637,6 +662,16 @@ function updateFocusStats() {
     document.getElementById('focusStreak').textContent = state.focusStreak;
 }
 
+function resetFocusStats() {
+    if (confirm('Toplam odaklanma süresi ve tamamlanan bölüm istatistikleri sıfırlansın mı?')) {
+        state.focusSessions = 0;
+        state.focusTotalMinutes = 0;
+        state.focusStreak = 0;
+        updateFocusStats();
+        saveSettings();
+    }
+}
+
 // ═══════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════
@@ -648,7 +683,10 @@ function toggleSettings() {
     if (isOpen) {
         panel.classList.remove('open');
         overlay.classList.remove('open');
+        closeFontDropdown();
     } else {
+        renderThemes();
+        renderFonts();
         panel.classList.add('open');
         overlay.classList.add('open');
     }
@@ -665,72 +703,324 @@ function renderThemes() {
     `).join('');
 }
 
-function setTheme(themeId, save = true) {
-    state.currentTheme = themeId;
-    
-    if (themeId === 'midnight-obsidian') {
-        document.documentElement.removeAttribute('data-theme');
+function hexToRgba(hex, alpha) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function adjustColorBrightness(hex, percent) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    let r = (num >> 16) + Math.round(255 * (percent / 100));
+    let g = ((num >> 8) & 0x00FF) + Math.round(255 * (percent / 100));
+    let b = (num & 0x0000FF) + Math.round(255 * (percent / 100));
+    r = Math.min(255, Math.max(0, r));
+    g = Math.min(255, Math.max(0, g));
+    b = Math.min(255, Math.max(0, b));
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+function getLuminance(hex) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+function applyThemeColors(themeId, bgColor, accentColor, save = true) {
+    if (themeId) state.currentTheme = themeId;
+    if (bgColor) state.customBg = bgColor;
+    if (accentColor) state.customAccent = accentColor;
+
+    const currentTheme = state.currentTheme || 'custom';
+    const activeBg = state.customBg || '#0a0a0f';
+    const activeAccent = state.customAccent || '#6366f1';
+
+    const root = document.documentElement;
+    root.setAttribute('data-theme', currentTheme);
+
+    // Calculate background luminance for contrast
+    let bgLuminance = 0.15; // Default dark for wallpapers
+    if (currentTheme === 'custom') {
+        bgLuminance = getLuminance(activeBg);
+        root.style.setProperty('--bg-primary', activeBg);
+        root.style.setProperty('--bg-secondary', adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -5 : 5));
+        root.style.setProperty('--bg-tertiary', adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -10 : 10));
+        root.style.setProperty('--bg-card', hexToRgba(adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -6 : 8), bgLuminance > 0.55 ? 0.85 : 0.7));
+        root.style.setProperty('--bg-card-hover', hexToRgba(adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -12 : 14), bgLuminance > 0.55 ? 0.95 : 0.8));
     } else {
-        document.documentElement.setAttribute('data-theme', themeId);
+        root.style.removeProperty('--bg-primary');
+        root.style.removeProperty('--bg-secondary');
+        root.style.removeProperty('--bg-tertiary');
+        root.style.removeProperty('--bg-card');
+        root.style.removeProperty('--bg-card-hover');
+
+        if (currentTheme === 'snowy-nature') {
+            bgLuminance = 0.65;
+        } else if (currentTheme === 'desert-nature') {
+            bgLuminance = 0.55;
+        }
     }
-    
-    // Handle Rain Animation
-    if (themeId === 'rain-nature') {
+
+    const isLightBg = bgLuminance > 0.55;
+
+    // Automatic Text, SVG Icon & Button Contrast Logic (Dark on Light, White on Dark)
+    const isAccentLight = getLuminance(activeAccent) > 0.55;
+    const btnTextColor = (isLightBg || isAccentLight) ? '#0f172a' : '#ffffff';
+
+    if (isLightBg) {
+        root.style.setProperty('--text-primary', '#0f172a');
+        root.style.setProperty('--text-secondary', 'rgba(15, 23, 42, 0.75)');
+        root.style.setProperty('--text-tertiary', 'rgba(15, 23, 42, 0.45)');
+        root.style.setProperty('--btn-primary-text', btnTextColor);
+        root.style.setProperty('--ring-bg', 'rgba(15, 23, 42, 0.15)');
+    } else {
+        root.style.setProperty('--text-primary', '#e8e8f0');
+        root.style.setProperty('--text-secondary', 'rgba(232, 232, 240, 0.65)');
+        root.style.setProperty('--text-tertiary', 'rgba(232, 232, 240, 0.35)');
+        root.style.setProperty('--btn-primary-text', btnTextColor);
+        root.style.setProperty('--ring-bg', 'rgba(255, 255, 255, 0.12)');
+    }
+
+    // Dynamic Accent Colors across ALL themes (Custom & Nature Wallpapers)
+    root.style.setProperty('--accent', activeAccent);
+    root.style.setProperty('--accent-hover', isLightBg ? adjustColorBrightness(activeAccent, -15) : adjustColorBrightness(activeAccent, 15));
+    root.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.3));
+    root.style.setProperty('--accent-soft', hexToRgba(activeAccent, 0.12));
+    root.style.setProperty('--glow-1', hexToRgba(activeAccent, 0.24));
+    root.style.setProperty('--glow-2', hexToRgba(adjustColorBrightness(activeAccent, 20), 0.18));
+    root.style.setProperty('--border', hexToRgba(activeAccent, isLightBg ? 0.25 : 0.18));
+    root.style.setProperty('--border-hover', hexToRgba(activeAccent, isLightBg ? 0.45 : 0.35));
+
+    // Update color input values in settings panel
+    const bgInput = document.getElementById('customBgInput');
+    const accentInput = document.getElementById('customAccentInput');
+    if (bgInput) bgInput.value = activeBg;
+    if (accentInput) accentInput.value = activeAccent;
+
+    // Update active theme card state
+    document.querySelectorAll('.theme-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.themeId === currentTheme);
+    });
+
+    // Handle Rain Theme logic
+    if (currentTheme === 'rain-nature') {
         initRainAnimation();
     } else {
-        const container = document.getElementById('rainOverlay');
-        if (container) container.innerHTML = '';
+        if (lightningTimeout) clearTimeout(lightningTimeout);
+        const rainOverlay = document.getElementById('rainOverlay');
+        if (rainOverlay) rainOverlay.innerHTML = '';
+        const lightningContainer = document.getElementById('lightningContainer');
+        if (lightningContainer) lightningContainer.classList.remove('flash-active');
     }
-    
-    // Update active state
-    document.querySelectorAll('.theme-card').forEach(card => {
-        card.classList.toggle('active', card.dataset.themeId === themeId);
-    });
-    
+
     if (save) saveSettings();
 }
 
-function initRainAnimation() {
-    const container = document.getElementById('rainOverlay');
-    if (!container) return;
-    container.innerHTML = '';
+const defaultThemeAccents = {
+    'custom': { bg: '#0a0a0f', accent: '#6366f1' },
+    'forest-nature': { accent: '#a3e635' },
+    'desert-nature': { accent: '#f59e0b' },
+    'snowy-nature': { accent: '#7dd3fc' },
+    'beach-nature': { accent: '#38bdf8' },
+    'night-nature': { accent: '#a78bfa' },
+    'rain-nature': { accent: '#38bdf8' },
+};
 
-    // Create falling rain streaks
-    for (let i = 0; i < 40; i++) {
-        const drop = document.createElement('div');
-        drop.className = 'rain-drop';
-        drop.style.left = (Math.random() * 100) + '%';
-        drop.style.animationDuration = (0.4 + Math.random() * 0.4) + 's';
-        drop.style.animationDelay = (Math.random() * 2) + 's';
-        drop.style.height = (40 + Math.random() * 60) + 'px';
-        drop.style.opacity = (0.2 + Math.random() * 0.5).toString();
-        container.appendChild(drop);
+function applyCustomTheme(bgColor, accentColor, save = true) {
+    applyThemeColors('custom', bgColor, accentColor, save);
+}
+
+function setTheme(themeId, save = true) {
+    const defaults = defaultThemeAccents[themeId] || defaultThemeAccents['custom'];
+    if (themeId === 'custom') {
+        state.customBg = defaults.bg;
+        state.customAccent = defaults.accent;
+    } else if (defaults.accent) {
+        state.customAccent = defaults.accent;
     }
+    applyThemeColors(themeId, state.customBg, state.customAccent, save);
+}
 
-    // Create sliding glass droplets
-    for (let i = 0; i < 30; i++) {
-        const droplet = document.createElement('div');
-        droplet.className = 'glass-droplet';
-        droplet.style.left = (Math.random() * 100) + '%';
-        droplet.style.top = (Math.random() * 85) + '%';
-        const size = 3 + Math.random() * 5;
-        droplet.style.width = size + 'px';
-        droplet.style.height = size + 'px';
-        droplet.style.animationDuration = (4 + Math.random() * 7) + 's';
-        droplet.style.animationDelay = (Math.random() * 5) + 's';
-        container.appendChild(droplet);
+function updateCustomColorsFromInput() {
+    const bgVal = document.getElementById('customBgInput')?.value || state.customBg;
+    const accentVal = document.getElementById('customAccentInput')?.value || state.customAccent;
+    applyThemeColors(state.currentTheme, bgVal, accentVal, true);
+}
+
+function setPresetCustomColors(bgHex, accentHex) {
+    if (state.currentTheme === 'custom') {
+        applyThemeColors('custom', bgHex, accentHex, true);
+    } else {
+        applyThemeColors(state.currentTheme, state.customBg, accentHex, true);
     }
 }
 
+function resetThemeColorsToDefault() {
+    const currentTheme = state.currentTheme || 'custom';
+    const defaults = defaultThemeAccents[currentTheme] || defaultThemeAccents['custom'];
+    
+    if (currentTheme === 'custom') {
+        state.customBg = defaults.bg;
+        state.customAccent = defaults.accent;
+    } else {
+        state.customAccent = defaults.accent;
+    }
+    
+    applyThemeColors(currentTheme, state.customBg, state.customAccent, true);
+}
+
+// ── Rain Animation & Lightning ──
+let lightningTimeout = null;
+
+function initRainAnimation() {
+    const rainOverlay = document.getElementById('rainOverlay');
+    if (!rainOverlay) return;
+    rainOverlay.innerHTML = '';
+    
+    // 1. Rain streaks strictly falling inside the glass window pane container
+    for (let i = 0; i < 35; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'rain-drop';
+        drop.style.left = `${Math.random() * 98}%`;
+        drop.style.width = `${1 + Math.random() * 1.5}px`;
+        drop.style.height = `${25 + Math.random() * 45}px`;
+        drop.style.animationDuration = `${0.9 + Math.random() * 1.4}s`;
+        drop.style.animationDelay = `${Math.random() * 2.5}s`;
+        drop.style.opacity = `${0.3 + Math.random() * 0.4}`;
+        rainOverlay.appendChild(drop);
+    }
+    
+    // 2. Slow sliding glass droplets on the window pane
+    for (let i = 0; i < 18; i++) {
+        const droplet = document.createElement('div');
+        droplet.className = 'glass-droplet';
+        droplet.style.left = `${Math.random() * 96}%`;
+        droplet.style.top = `${Math.random() * 70}%`;
+        const size = 3 + Math.random() * 4;
+        droplet.style.width = `${size}px`;
+        droplet.style.height = `${size * (1.2 + Math.random() * 0.5)}px`;
+        droplet.style.animationDuration = `${6 + Math.random() * 7}s`;
+        droplet.style.animationDelay = `${Math.random() * 5}s`;
+        rainOverlay.appendChild(droplet);
+    }
+    
+    scheduleLightning();
+}
+
+function scheduleLightning() {
+    if (lightningTimeout) clearTimeout(lightningTimeout);
+    if (state.currentTheme !== 'rain-nature') return;
+    
+    // Trigger lightning bolt every 25 to 40 seconds
+    const delay = 25000 + Math.random() * 15000;
+    lightningTimeout = setTimeout(() => {
+        if (state.currentTheme === 'rain-nature') {
+            triggerLightning();
+            scheduleLightning();
+        }
+    }, delay);
+}
+
+function triggerLightning() {
+    const container = document.getElementById('lightningContainer');
+    const path = document.getElementById('lightningPath');
+    if (!container || !path) return;
+    
+    // Generate realistic branched lightning bolt in upper sky outside window (X: 520..840, Y: 0..240)
+    const startX = 520 + Math.floor(Math.random() * 320);
+    let currentX = startX;
+    let currentY = 0;
+    let d = `M ${currentX},${currentY}`;
+    
+    for (let i = 0; i < 5; i++) {
+        currentY += 35 + Math.floor(Math.random() * 35);
+        currentX += (Math.random() - 0.5) * 70;
+        d += ` L ${Math.round(currentX)},${Math.round(currentY)}`;
+        
+        if (i === 2 && Math.random() > 0.4) {
+            const branchX = currentX + (Math.random() > 0.5 ? 45 : -45);
+            const branchY = currentY + 35;
+            d += ` M ${Math.round(currentX)},${Math.round(currentY)} L ${Math.round(branchX)},${Math.round(branchY)} M ${Math.round(currentX)},${Math.round(currentY)}`;
+        }
+    }
+    
+    path.setAttribute('d', d);
+    container.classList.remove('flash-active');
+    void container.offsetWidth; // trigger reflow
+    container.classList.add('flash-active');
+}
+
+function toggleFontDropdown(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('fontDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+}
+
+function closeFontDropdown() {
+    const dropdown = document.getElementById('fontDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+    }
+}
+
+// Close font dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('fontDropdown');
+    if (dropdown && dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
+        closeFontDropdown();
+    }
+});
+
 function renderFonts() {
-    const list = document.getElementById('fontList');
-    list.innerHTML = fonts.map(font => `
-        <div class="font-card ${state.currentFont === font.id ? 'active' : ''}" 
-             onclick="setFont('${font.id}')" data-font-id="${font.id}">
-            <span class="font-preview" style="font-family: ${font.display};">${font.name}</span>
-            <span class="font-label">Aa</span>
+    const menu = document.getElementById('fontDropdownMenu');
+    if (!menu) return;
+    
+    menu.innerHTML = fonts.map(font => `
+        <div class="custom-dropdown-item ${state.currentFont === font.id ? 'active' : ''}" 
+             onclick="selectFont('${font.id}')" data-font-id="${font.id}">
+            <div class="dropdown-item-left">
+                <span class="item-font-sample" style="font-family: ${font.family};">12:04</span>
+                <span class="item-font-name" style="font-family: ${font.family};">${font.name}</span>
+            </div>
+            <svg class="item-check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
     `).join('');
+    
+    updateFontDropdownDisplay(state.currentFont);
+}
+
+function updateFontDropdownDisplay(fontId) {
+    const font = fonts.find(f => f.id === fontId) || fonts[0];
+    const previewEl = document.getElementById('dropdownFontPreview');
+    const textEl = document.getElementById('dropdownFontText');
+    if (previewEl) {
+        previewEl.style.fontFamily = font.family;
+    }
+    if (textEl) {
+        textEl.textContent = font.name;
+        textEl.style.fontFamily = font.family;
+    }
+    
+    document.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.fontId === fontId);
+    });
+}
+
+function selectFont(fontId) {
+    setFont(fontId, true);
+    closeFontDropdown();
 }
 
 function setFont(fontId, save = true) {
@@ -740,11 +1030,7 @@ function setFont(fontId, save = true) {
         document.documentElement.style.setProperty('--font-display', font.family);
     }
     
-    // Update active state
-    document.querySelectorAll('.font-card').forEach(card => {
-        card.classList.toggle('active', card.dataset.fontId === fontId);
-    });
-    
+    updateFontDropdownDisplay(fontId);
     if (save) saveSettings();
 }
 
@@ -763,6 +1049,44 @@ function toggleAnalog(show, save = true) {
     document.getElementById('analogOff').classList.toggle('active', !show);
     if (save) saveSettings();
 }
+
+function toggleGreeting(show, save = true) {
+    state.showGreeting = show;
+    const greetingEl = document.getElementById('clockGreeting');
+    if (greetingEl) {
+        greetingEl.style.display = show ? '' : 'none';
+    }
+    const onBtn = document.getElementById('greetingOn');
+    const offBtn = document.getElementById('greetingOff');
+    if (onBtn) onBtn.classList.toggle('active', show);
+    if (offBtn) offBtn.classList.toggle('active', !show);
+    if (save) saveSettings();
+}
+
+function toggleDate(show, save = true) {
+    state.showDate = show;
+    const dateEl = document.getElementById('dateDisplay') || document.getElementById('clockDate');
+    if (dateEl) {
+        dateEl.style.display = show ? '' : 'none';
+    }
+    const onBtn = document.getElementById('dateOn');
+    const offBtn = document.getElementById('dateOff');
+    if (onBtn) onBtn.classList.toggle('active', show);
+    if (offBtn) offBtn.classList.toggle('active', !show);
+    if (save) saveSettings();
+}
+
+function toggleBlinkColon(blink, save = true) {
+    state.blinkColon = blink;
+    document.body.classList.toggle('no-blink-colon', !blink);
+    const onBtn = document.getElementById('blinkOn');
+    const offBtn = document.getElementById('blinkOff');
+    if (onBtn) onBtn.classList.toggle('active', blink);
+    if (offBtn) offBtn.classList.toggle('active', !blink);
+    if (save) saveSettings();
+}
+
+
 
 function toggleSeconds(show, save = true) {
     state.showSeconds = show;
@@ -891,21 +1215,31 @@ function stopAlarm() {
 state.isFullscreen = false;
 
 function initFullscreenClickHandlers() {
-    // Click on stopwatch display to toggle pause/play in fullscreen
+    // Click on stopwatch display to toggle pause/play (works in normal and fullscreen modes)
     const swDisplay = document.querySelector('.stopwatch-display');
-    swDisplay.addEventListener('click', () => {
-        if (state.isFullscreen) {
+    if (swDisplay) {
+        swDisplay.addEventListener('click', () => {
             swToggle();
-        }
-    });
+        });
+    }
 
-    // Click on timer ring display to toggle pause/play in fullscreen
+    // Click on timer ring display to toggle pause/play (works in normal and fullscreen modes)
     const timerRingDisplay = document.querySelector('.timer-ring-display');
-    timerRingDisplay.addEventListener('click', () => {
-        if (state.isFullscreen && (state.timerRunning || state.timerRemaining > 0)) {
-            timerToggle();
-        }
-    });
+    if (timerRingDisplay) {
+        timerRingDisplay.addEventListener('click', () => {
+            if (state.timerRunning || state.timerRemaining > 0) {
+                timerToggle();
+            }
+        });
+    }
+
+    // Click on focus timer container to toggle pause/play (works in normal and fullscreen modes)
+    const focusRingContainer = document.querySelector('.focus-timer-container');
+    if (focusRingContainer) {
+        focusRingContainer.addEventListener('click', () => {
+            focusToggle();
+        });
+    }
 }
 
 function toggleFullscreen(tab) {
