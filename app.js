@@ -17,6 +17,11 @@ const state = {
     currentTheme: 'custom',
     customBg: '#0a0a0f',
     customAccent: '#6366f1',
+    customDigitColor: '#ffffff',
+    customGradientEnd: '#38bdf8',
+    gradientEnabled: true,
+    gradientPercent: 50,
+    gradientAngle: 135,
     currentFont: 'inter',
     // Stopwatch
     swRunning: false,
@@ -102,11 +107,18 @@ function loadSettings() {
         const s = JSON.parse(saved);
         if (s.customBg) state.customBg = s.customBg;
         if (s.customAccent) state.customAccent = s.customAccent;
+        if (s.customDigitColor) state.customDigitColor = s.customDigitColor;
+        if (s.customGradientEnd) state.customGradientEnd = s.customGradientEnd;
         if (s.theme) {
-            applyThemeColors(s.theme, state.customBg, state.customAccent, false);
+            applyThemeColors(s.theme, state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, false);
         } else {
-            applyThemeColors('custom', state.customBg, state.customAccent, false);
+            applyThemeColors('custom', state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, false);
         }
+        if (s.gradientEnabled !== undefined) toggleGradient(s.gradientEnabled, false);
+        if (s.gradientPercent !== undefined) setGradientPercent(s.gradientPercent, false);
+        else setGradientPercent(50, false);
+        if (s.gradientAngle !== undefined) setGradientAngle(s.gradientAngle, false);
+        else setGradientAngle(135, false);
         if (s.font) setFont(s.font, false);
         if (s.timeFormat) setTimeFormat(s.timeFormat, false);
         if (s.showAnalog !== undefined) toggleAnalog(s.showAnalog, false);
@@ -131,6 +143,11 @@ function saveSettings() {
         theme: state.currentTheme,
         customBg: state.customBg,
         customAccent: state.customAccent,
+        customDigitColor: state.customDigitColor,
+        customGradientEnd: state.customGradientEnd,
+        gradientEnabled: state.gradientEnabled,
+        gradientPercent: state.gradientPercent,
+        gradientAngle: state.gradientAngle,
         font: state.currentFont,
         timeFormat: state.timeFormat,
         showAnalog: state.showAnalog,
@@ -736,10 +753,12 @@ function getLuminance(hex) {
     return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
-function applyThemeColors(themeId, bgColor, accentColor, save = true) {
+function applyThemeColors(themeId, bgColor, accentColor, digitColor, gradientColor, save = true) {
     if (themeId) state.currentTheme = themeId;
     if (bgColor) state.customBg = bgColor;
     if (accentColor) state.customAccent = accentColor;
+    if (digitColor) state.customDigitColor = digitColor;
+    if (gradientColor) state.customGradientEnd = gradientColor;
 
     const currentTheme = state.currentTheme || 'custom';
     const activeBg = state.customBg || '#0a0a0f';
@@ -749,29 +768,30 @@ function applyThemeColors(themeId, bgColor, accentColor, save = true) {
     root.setAttribute('data-theme', currentTheme);
 
     // Calculate background luminance for contrast
-    let bgLuminance = 0.15; // Default dark for wallpapers
-    if (currentTheme === 'custom') {
-        bgLuminance = getLuminance(activeBg);
-        root.style.setProperty('--bg-primary', activeBg);
-        root.style.setProperty('--bg-secondary', adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -5 : 5));
-        root.style.setProperty('--bg-tertiary', adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -10 : 10));
-        root.style.setProperty('--bg-card', hexToRgba(adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -6 : 8), bgLuminance > 0.55 ? 0.85 : 0.7));
-        root.style.setProperty('--bg-card-hover', hexToRgba(adjustColorBrightness(activeBg, bgLuminance > 0.55 ? -12 : 14), bgLuminance > 0.55 ? 0.95 : 0.8));
-    } else {
-        root.style.removeProperty('--bg-primary');
-        root.style.removeProperty('--bg-secondary');
-        root.style.removeProperty('--bg-tertiary');
-        root.style.removeProperty('--bg-card');
-        root.style.removeProperty('--bg-card-hover');
-
-        if (currentTheme === 'snowy-nature') {
-            bgLuminance = 0.65;
-        } else if (currentTheme === 'desert-nature') {
-            bgLuminance = 0.55;
-        }
-    }
-
+    const bgLuminance = getLuminance(activeBg);
     const isLightBg = bgLuminance > 0.55;
+
+    // Apply Background & Surface Colors across ALL themes (Custom & Wallpaper Nature Themes)
+    if (currentTheme === 'custom') {
+        root.style.setProperty('--bg-primary', activeBg);
+        root.style.setProperty('--bg-secondary', adjustColorBrightness(activeBg, isLightBg ? -5 : 5));
+        root.style.setProperty('--bg-tertiary', adjustColorBrightness(activeBg, isLightBg ? -10 : 10));
+        root.style.setProperty('--bg-card', hexToRgba(adjustColorBrightness(activeBg, isLightBg ? -6 : 8), isLightBg ? 0.85 : 0.7));
+        root.style.setProperty('--bg-card-hover', hexToRgba(adjustColorBrightness(activeBg, isLightBg ? -12 : 14), isLightBg ? 0.95 : 0.8));
+        root.style.setProperty('--bg-sidebar', adjustColorBrightness(activeBg, isLightBg ? -5 : 5));
+        root.style.setProperty('--bg-settings', adjustColorBrightness(activeBg, isLightBg ? -5 : 5));
+        root.style.removeProperty('--bg-overlay');
+    } else {
+        // Wallpaper Themes: Sidebar, Settings Panel, Cards & Overlay actively derive from customBg
+        root.style.removeProperty('--bg-primary');
+        root.style.setProperty('--bg-secondary', hexToRgba(activeBg, isLightBg ? 0.88 : 0.82));
+        root.style.setProperty('--bg-tertiary', hexToRgba(adjustColorBrightness(activeBg, isLightBg ? -8 : 8), isLightBg ? 0.92 : 0.86));
+        root.style.setProperty('--bg-card', hexToRgba(adjustColorBrightness(activeBg, isLightBg ? -6 : 8), isLightBg ? 0.75 : 0.65));
+        root.style.setProperty('--bg-card-hover', hexToRgba(adjustColorBrightness(activeBg, isLightBg ? -12 : 14), isLightBg ? 0.88 : 0.78));
+        root.style.setProperty('--bg-sidebar', hexToRgba(activeBg, isLightBg ? 0.82 : 0.76));
+        root.style.setProperty('--bg-settings', hexToRgba(activeBg, isLightBg ? 0.92 : 0.88));
+        root.style.setProperty('--bg-overlay', hexToRgba(activeBg, isLightBg ? 0.35 : 0.42));
+    }
 
     // Automatic Text, SVG Icon & Button Contrast Logic (Dark on Light, White on Dark)
     const isAccentLight = getLuminance(activeAccent) > 0.55;
@@ -791,8 +811,13 @@ function applyThemeColors(themeId, bgColor, accentColor, save = true) {
         root.style.setProperty('--ring-bg', 'rgba(255, 255, 255, 0.12)');
     }
 
-    // Dynamic Accent Colors across ALL themes (Custom & Nature Wallpapers)
+    // Dynamic Accent, Digit & Gradient Colors across ALL themes
+    const activeDigit = state.customDigitColor || (isLightBg ? '#0f172a' : '#ffffff');
+    const activeGradient = state.customGradientEnd || activeAccent;
+
     root.style.setProperty('--accent', activeAccent);
+    root.style.setProperty('--digit-color', activeDigit);
+    root.style.setProperty('--gradient-end', activeGradient);
     root.style.setProperty('--accent-hover', isLightBg ? adjustColorBrightness(activeAccent, -15) : adjustColorBrightness(activeAccent, 15));
     root.style.setProperty('--accent-glow', hexToRgba(activeAccent, 0.3));
     root.style.setProperty('--accent-soft', hexToRgba(activeAccent, 0.12));
@@ -804,8 +829,12 @@ function applyThemeColors(themeId, bgColor, accentColor, save = true) {
     // Update color input values in settings panel
     const bgInput = document.getElementById('customBgInput');
     const accentInput = document.getElementById('customAccentInput');
+    const digitInput = document.getElementById('customDigitInput');
+    const gradientInput = document.getElementById('customGradientInput');
     if (bgInput) bgInput.value = activeBg;
     if (accentInput) accentInput.value = activeAccent;
+    if (digitInput) digitInput.value = activeDigit;
+    if (gradientInput) gradientInput.value = activeGradient;
 
     // Update active theme card state
     document.querySelectorAll('.theme-card').forEach(card => {
@@ -827,56 +856,174 @@ function applyThemeColors(themeId, bgColor, accentColor, save = true) {
 }
 
 const defaultThemeAccents = {
-    'custom': { bg: '#0a0a0f', accent: '#6366f1' },
-    'forest-nature': { accent: '#a3e635' },
-    'desert-nature': { accent: '#f59e0b' },
-    'snowy-nature': { accent: '#7dd3fc' },
-    'beach-nature': { accent: '#38bdf8' },
-    'night-nature': { accent: '#a78bfa' },
-    'rain-nature': { accent: '#38bdf8' },
+    'custom': { bg: '#0a0a0f', accent: '#6366f1', digit: '#ffffff', gradient: '#a855f7' },
+    'forest-nature': { bg: '#061209', accent: '#a3e635', digit: '#e6f0e6', gradient: '#a3e635' },
+    'desert-nature': { bg: '#140c06', accent: '#f59e0b', digit: '#fef3c7', gradient: '#f59e0b' },
+    'snowy-nature': { bg: '#0b131e', accent: '#7dd3fc', digit: '#ffffff', gradient: '#38bdf8' },
+    'beach-nature': { bg: '#061219', accent: '#38bdf8', digit: '#e0f2fe', gradient: '#38bdf8' },
+    'night-nature': { bg: '#080714', accent: '#a78bfa', digit: '#ede9fe', gradient: '#38bdf8' },
+    'rain-nature': { bg: '#090e16', accent: '#38bdf8', digit: '#e2e8f0', gradient: '#38bdf8' },
 };
 
-function applyCustomTheme(bgColor, accentColor, save = true) {
-    applyThemeColors('custom', bgColor, accentColor, save);
+function applyCustomTheme(bgColor, accentColor, digitColor, gradientColor, save = true) {
+    applyThemeColors('custom', bgColor, accentColor, digitColor, gradientColor, save);
 }
 
 function setTheme(themeId, save = true) {
     const defaults = defaultThemeAccents[themeId] || defaultThemeAccents['custom'];
-    if (themeId === 'custom') {
-        state.customBg = defaults.bg;
-        state.customAccent = defaults.accent;
-    } else if (defaults.accent) {
-        state.customAccent = defaults.accent;
-    }
-    applyThemeColors(themeId, state.customBg, state.customAccent, save);
+    state.customBg = defaults.bg || '#0a0a0f';
+    if (defaults.accent) state.customAccent = defaults.accent;
+    state.customDigitColor = defaults.digit || '#ffffff';
+    state.customGradientEnd = defaults.gradient || '#38bdf8';
+    applyThemeColors(themeId, state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, save);
 }
 
 function updateCustomColorsFromInput() {
     const bgVal = document.getElementById('customBgInput')?.value || state.customBg;
     const accentVal = document.getElementById('customAccentInput')?.value || state.customAccent;
-    applyThemeColors(state.currentTheme, bgVal, accentVal, true);
+    const digitVal = document.getElementById('customDigitInput')?.value || state.customDigitColor;
+    const gradientVal = document.getElementById('customGradientInput')?.value || state.customGradientEnd;
+    applyThemeColors(state.currentTheme, bgVal, accentVal, digitVal, gradientVal, true);
 }
 
-function setPresetCustomColors(bgHex, accentHex) {
-    if (state.currentTheme === 'custom') {
-        applyThemeColors('custom', bgHex, accentHex, true);
-    } else {
-        applyThemeColors(state.currentTheme, state.customBg, accentHex, true);
-    }
+function setPresetCustomColors(bgHex, accentHex, digitHex = '#ffffff', gradientHex = '#38bdf8') {
+    applyThemeColors(state.currentTheme, bgHex, accentHex, digitHex, gradientHex, true);
 }
 
 function resetThemeColorsToDefault() {
     const currentTheme = state.currentTheme || 'custom';
     const defaults = defaultThemeAccents[currentTheme] || defaultThemeAccents['custom'];
     
-    if (currentTheme === 'custom') {
-        state.customBg = defaults.bg;
-        state.customAccent = defaults.accent;
-    } else {
-        state.customAccent = defaults.accent;
+    state.customBg = defaults.bg || '#0a0a0f';
+    state.customAccent = defaults.accent;
+    state.customDigitColor = defaults.digit || '#ffffff';
+    state.customGradientEnd = defaults.gradient || '#38bdf8';
+    
+    applyThemeColors(currentTheme, state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, true);
+}
+
+function toggleGradient(enable, save = true) {
+    state.gradientEnabled = enable;
+    document.body.classList.toggle('no-gradient', !enable);
+    const onBtn = document.getElementById('gradientOn');
+    const offBtn = document.getElementById('gradientOff');
+    if (onBtn) onBtn.classList.toggle('active', enable);
+    if (offBtn) offBtn.classList.toggle('active', !enable);
+    
+    const gradientPicker = document.getElementById('gradientPickerItem');
+    if (gradientPicker) {
+        gradientPicker.style.opacity = enable ? '1' : '0.35';
+        gradientPicker.style.pointerEvents = enable ? 'auto' : 'none';
+    }
+
+    const controlsWrapper = document.getElementById('gradientControlsWrapper');
+    if (controlsWrapper) {
+        controlsWrapper.style.opacity = enable ? '1' : '0.35';
+        controlsWrapper.style.pointerEvents = enable ? 'auto' : 'none';
+    }
+
+    if (save) saveSettings();
+}
+
+function setGradientPercent(percent, save = true) {
+    const val = Math.min(90, Math.max(10, parseInt(percent, 10) || 50));
+    state.gradientPercent = val;
+    document.documentElement.style.setProperty('--gradient-percent', `${val}%`);
+    
+    const slider = document.getElementById('gradientSlider');
+    const badge = document.getElementById('gradientPercentBadge');
+    const subBadge = document.getElementById('gradientPercentSubBadge');
+    if (slider && parseInt(slider.value, 10) !== val) {
+        slider.value = val;
+    }
+    if (badge) {
+        badge.textContent = `%${val}`;
+    }
+    if (subBadge) {
+        subBadge.textContent = `%${val}`;
+    }
+    if (save) saveSettings();
+}
+
+function setGradientAngle(angle, save = true) {
+    const val = (parseInt(angle, 10) % 360 + 360) % 360;
+    state.gradientAngle = val;
+    document.documentElement.style.setProperty('--gradient-angle', `${val}deg`);
+    
+    const slider = document.getElementById('gradientAngleSlider');
+    const badge = document.getElementById('gradientAngleBadge');
+    const indicator = document.getElementById('angleDialIndicator');
+    
+    if (slider && parseInt(slider.value, 10) !== val) {
+        slider.value = val;
+    }
+    if (badge) {
+        badge.textContent = `${val}°`;
+    }
+    if (indicator) {
+        indicator.style.transform = `rotate(${val}deg)`;
     }
     
-    applyThemeColors(currentTheme, state.customBg, state.customAccent, true);
+    // Update active preset button
+    document.querySelectorAll('.angle-preset-btn').forEach(btn => {
+        const btnAngle = parseInt(btn.textContent, 10);
+        btn.classList.toggle('active', btnAngle === val);
+    });
+    
+    if (save) saveSettings();
+}
+
+// ── Rotatable Dial Event Handlers ──
+let isDraggingAngle = false;
+
+function startAngleDrag(e) {
+    e.preventDefault();
+    isDraggingAngle = true;
+    const dial = document.getElementById('angleDial');
+    if (dial) dial.classList.add('dragging');
+    updateAngleFromEvent(e);
+    
+    window.addEventListener('mousemove', onAngleDragMove);
+    window.addEventListener('mouseup', stopAngleDrag);
+    window.addEventListener('touchmove', onAngleDragMove, { passive: false });
+    window.addEventListener('touchend', stopAngleDrag);
+}
+
+function onAngleDragMove(e) {
+    if (!isDraggingAngle) return;
+    if (e.preventDefault) e.preventDefault();
+    updateAngleFromEvent(e);
+}
+
+function stopAngleDrag() {
+    if (!isDraggingAngle) return;
+    isDraggingAngle = false;
+    const dial = document.getElementById('angleDial');
+    if (dial) dial.classList.remove('dragging');
+    window.removeEventListener('mousemove', onAngleDragMove);
+    window.removeEventListener('mouseup', stopAngleDrag);
+    window.removeEventListener('touchmove', onAngleDragMove);
+    window.removeEventListener('touchend', stopAngleDrag);
+}
+
+function updateAngleFromEvent(e) {
+    const dial = document.getElementById('angleDial');
+    if (!dial) return;
+    const rect = dial.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - centerX;
+    const deltaY = clientY - centerY;
+    
+    let deg = Math.round((Math.atan2(deltaY, deltaX) * (180 / Math.PI)) + 90);
+    if (deg < 0) deg += 360;
+    if (deg >= 360) deg -= 360;
+    
+    setGradientAngle(deg, true);
 }
 
 // ── Rain Animation & Lightning ──

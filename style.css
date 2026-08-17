@@ -49,22 +49,26 @@
 
 /* ── Custom Color Pickers ── */
 .custom-color-pickers {
-    display: flex;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
     margin-bottom: 14px;
 }
 
 .color-picker-item {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
 }
 
 .color-picker-item label {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     color: var(--text-secondary);
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .color-input-wrapper {
@@ -206,14 +210,26 @@
     top: 0; left: 0; right: 0; bottom: 0;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    background: rgba(10, 15, 20, 0.42);
+    background: var(--bg-overlay, rgba(10, 15, 20, 0.42));
     z-index: 1;
     pointer-events: none;
 }
 
 /* ── Frosted Glass Backdrop Blur for Wallpaper Themes ── */
-[data-theme$="-nature"] .sidebar,
-[data-theme$="-nature"] .settings-panel,
+[data-theme$="-nature"] .sidebar {
+    background: var(--bg-sidebar, rgba(15, 23, 42, 0.78)) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+}
+
+[data-theme$="-nature"] .settings-panel {
+    background: var(--bg-settings, rgba(15, 23, 42, 0.90)) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left: 1px solid var(--border);
+}
+
 [data-theme$="-nature"] .stat-card,
 [data-theme$="-nature"] .lap-item,
 [data-theme$="-nature"] .modal-content,
@@ -723,10 +739,26 @@ body.sidebar-hidden .main-content {
     font-size: calc(7.5rem * var(--clock-scale, 1));
     font-weight: 700;
     letter-spacing: -2px;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent));
+    background: linear-gradient(var(--gradient-angle, 135deg), var(--gradient-end, var(--accent)) 0%, var(--gradient-end, var(--accent)) calc(var(--gradient-percent, 50%) - 18%), var(--digit-color, #ffffff) calc(var(--gradient-percent, 50%) + 18%), var(--digit-color, #ffffff) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+body.no-gradient .time-hours,
+body.no-gradient .time-minutes,
+body.no-gradient .time-seconds-small,
+body.no-gradient .sw-minutes,
+body.no-gradient .sw-seconds,
+body.no-gradient .sw-ms,
+body.no-gradient #timerDisplay,
+body.no-gradient .timer-ring-display span:first-child,
+body.no-gradient .focus-time,
+body.no-gradient .mode-time {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: var(--digit-color, #ffffff) !important;
+    color: var(--digit-color, #ffffff) !important;
 }
 
 .time-separator {
@@ -883,7 +915,10 @@ body.no-blink-colon .time-separator {
     font-size: calc(6rem * var(--clock-scale, 1));
     font-weight: 700;
     letter-spacing: -1px;
-    color: var(--text-primary);
+    background: linear-gradient(var(--gradient-angle, 135deg), var(--gradient-end, var(--accent)) 0%, var(--gradient-end, var(--accent)) calc(var(--gradient-percent, 50%) - 18%), var(--digit-color, #ffffff) calc(var(--gradient-percent, 50%) + 18%), var(--digit-color, #ffffff) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .sw-separator {
@@ -1202,7 +1237,10 @@ body.no-blink-colon .time-separator {
     font-family: var(--font-display);
     font-size: 2.8rem;
     font-weight: 700;
-    color: var(--text-primary);
+    background: linear-gradient(var(--gradient-angle, 135deg), var(--gradient-end, var(--accent)) 0%, var(--gradient-end, var(--accent)) calc(var(--gradient-percent, 50%) - 18%), var(--digit-color, #ffffff) calc(var(--gradient-percent, 50%) + 18%), var(--digit-color, #ffffff) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .timer-ring-container.show-ms .timer-ring-display span:first-child {
@@ -1239,44 +1277,45 @@ body.no-blink-colon .time-separator {
 
 .focus-title {
     font-family: var(--font-display);
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
-    letter-spacing: 1px;
 }
 
 .focus-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
 }
 
-.focus-modes {
+.focus-mode-selector {
     display: flex;
     gap: 8px;
+    background: var(--bg-card);
+    padding: 4px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
 }
 
-.focus-mode-btn {
-    padding: 12px 20px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
+.mode-btn {
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
     color: var(--text-secondary);
     border-radius: var(--radius-md);
     cursor: pointer;
+    font-family: var(--font-main);
     transition: all var(--transition-fast);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    min-width: 90px;
-    font-family: var(--font-main);
+    gap: 2px;
 }
 
-.focus-mode-btn:hover {
-    border-color: var(--border-hover);
-    background: var(--bg-card-hover);
+.mode-btn:hover {
+    color: var(--text-primary);
 }
 
-.focus-mode-btn.active {
+.mode-btn.active {
     border-color: var(--accent);
     background: var(--accent-soft);
     color: var(--accent);
@@ -1332,7 +1371,10 @@ body.no-blink-colon .time-separator {
     font-family: var(--font-display);
     font-size: 3.2rem;
     font-weight: 700;
-    color: var(--text-primary);
+    background: linear-gradient(var(--gradient-angle, 135deg), var(--gradient-end, var(--accent)) 0%, var(--gradient-end, var(--accent)) calc(var(--gradient-percent, 50%) - 18%), var(--digit-color, #ffffff) calc(var(--gradient-percent, 50%) + 18%), var(--digit-color, #ffffff) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .focus-status {
@@ -1483,6 +1525,238 @@ body.no-blink-colon .time-separator {
     letter-spacing: 2px;
     font-weight: 700;
     margin-bottom: 12px;
+}
+
+.settings-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.settings-section-header h4 {
+    margin-bottom: 0;
+}
+
+.range-value-badge {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+}
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    transition: opacity var(--transition-fast);
+}
+
+.slider-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.slider-track-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.custom-range-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.custom-range-slider:hover {
+    border-color: var(--accent);
+}
+
+.custom-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px var(--accent-glow);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.custom-range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.custom-range-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px var(--accent-glow);
+    cursor: pointer;
+}
+
+.slider-scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    padding: 0 2px;
+}
+
+/* ── Gradyan Angle Control & Rotatable Dial ── */
+.angle-control-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.slider-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.slider-subvalue {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.angle-dial-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 6px 0 4px;
+}
+
+.angle-dial {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    flex-shrink: 0;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.angle-dial:hover,
+.angle-dial.dragging {
+    border-color: var(--accent);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 14px var(--accent-glow);
+    cursor: grabbing;
+}
+
+.angle-dial-indicator {
+    position: absolute;
+    inset: 0;
+    transform-origin: center center;
+    transform: rotate(135deg);
+    transition: transform 0.05s ease-out;
+    pointer-events: none;
+}
+
+.angle-dial-needle {
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 28px;
+    background: linear-gradient(to top, var(--accent), #ffffff);
+    border-radius: 4px;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.angle-dial-needle::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 7px solid #ffffff;
+}
+
+.angle-dial-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.angle-presets-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.angle-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.angle-preset-btn {
+    padding: 6px 2px;
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+}
+
+.angle-preset-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
+}
+
+.angle-preset-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 700;
 }
 
 /* ── Custom Font Dropdown ── */
