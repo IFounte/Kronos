@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Modern saat uygulaması - Kronometre, Zamanlayıcı ve Odaklanma Modu">
+    <title>Kronos — Modern Saat Uygulaması</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230a0a0f' stroke='%236366f1' stroke-width='5'/%3E%3Cline x1='50' y1='50' x2='50' y2='22' stroke='%23e8e8f0' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='68' y2='58' stroke='%23e8e8f0' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='4' fill='%236366f1'/%3E%3C/svg%3E">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0f">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Fira+Code:wght@300;400;500;600;700&family=Source+Code+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background ambient glow -->
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="logo-text">Kronos</span>
+        </div>
+        
+        <div class="nav-items">
+            <button class="nav-btn active" data-tab="clock" id="nav-clock">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>Saat</span>
+            </button>
+            <button class="nav-btn" data-tab="stopwatch" id="nav-stopwatch">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="13" r="8"/>
+                    <path d="M12 9v4l2 2"/>
+                    <path d="M5 3L2 6"/>
+                    <path d="M22 6l-3-3"/>
+                    <path d="M12 5V3"/>
+                    <path d="M10 2h4"/>
+                </svg>
+                <span>Kronometre</span>
+            </button>
+            <button class="nav-btn" data-tab="timer" id="nav-timer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 22h14"/>
+                    <path d="M5 2h14"/>
+                    <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/>
+                    <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>
+                </svg>
+                <span>Zamanlayıcı</span>
+            </button>
+            <button class="nav-btn" data-tab="focus" id="nav-focus">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+                <span>Odaklanma</span>
+            </button>
+        </div>
+
+        <div class="sidebar-bottom">
+            <button class="nav-btn" id="settings-toggle" onclick="toggleSettings()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>Ayarlar</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Toggle Button (visible when collapsed/hidden) -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="cycleSidebar()" title="Panel (P)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-menu"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        
+        <!-- CLOCK TAB -->
+        <section class="tab-content active" id="tab-clock">
+            <button class="fullscreen-btn" id="fsClockBtn" onclick="toggleFullscreen('clock')" title="Tam Ekran (F)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-expand"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-shrink" style="display:none"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+            </button>
+            <div class="clock-container">
+                <div class="date-display" id="dateDisplay"></div>
+                <div class="time-display" id="timeDisplay">
+                    <span class="time-hours" id="clockHours">00</span>
+                    <span class="time-separator">:</span>
+                    <span class="time-minutes" id="clockMinutes">00</span>
+                    <span class="time-seconds-small" id="clockSeconds">00</span>
+                </div>
+                <div class="clock-subtitle" id="clockGreeting"></div>
+                
+                <!-- Analog Clock -->
+                <div class="analog-clock" id="analogClock">
+                    <div class="clock-face">
+                        <div class="clock-markers"></div>
+                        <div class="hand hour-hand" id="hourHand"></div>
+                        <div class="hand minute-hand" id="minuteHand"></div>
+                        <div class="hand second-hand" id="secondHand"></div>
+                        <div class="clock-center"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STOPWATCH TAB -->
+        <section class="tab-content" id="tab-stopwatch">
+            <button class="fullscreen-btn" id="fsStopwatchBtn" onclick="toggleFullscreen('stopwatch')" title="Tam Ekran (F)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-expand"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-shrink" style="display:none"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+            </button>
+            <div class="stopwatch-container">
+                <div class="stopwatch-display">
+                    <span class="sw-minutes" id="swMinutes">00</span>
+                    <span class="sw-separator">:</span>
+                    <span class="sw-seconds" id="swSeconds">00</span>
+                    <span class="sw-separator" id="swMsSep">.</span>
+                    <span class="sw-ms" id="swMs">00</span>
+                </div>
+                
+                <div class="stopwatch-controls">
+                    <button class="control-btn secondary" id="swResetBtn" onclick="swReset()" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Sıfırla</span>
+                    </button>
+                    <button class="control-btn primary large" id="swStartBtn" onclick="swToggle()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="swPlayIcon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="swPauseIcon" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    </button>
+                    <button class="control-btn secondary" id="swLapBtn" onclick="swLap()" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
+                        <span>Tur</span>
+                    </button>
+                </div>
+
+                <div class="laps-container" id="lapsContainer">
+                    <div class="laps-list" id="lapsList"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMER TAB -->
+        <section class="tab-content" id="tab-timer">
+            <button class="fullscreen-btn" id="fsTimerBtn" onclick="toggleFullscreen('timer')" title="Tam Ekran (F)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-expand"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-shrink" style="display:none"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+            </button>
+            <div class="timer-container">
+                <!-- Timer Setup -->
+                <div class="timer-setup" id="timerSetup">
+                    <div class="timer-input-group">
+                        <div class="timer-input-col">
+                            <label>Saat</label>
+                            <div class="timer-spinner">
+                                <button class="spinner-btn up" onclick="adjustTimer('hours', 1)">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                                </button>
+                                <input type="number" id="timerHours" value="0" min="0" max="23" class="timer-input">
+                                <button class="spinner-btn down" onclick="adjustTimer('hours', -1)">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <span class="timer-colon">:</span>
+                        <div class="timer-input-col">
+                            <label>Dakika</label>
+                            <div class="timer-spinner">
+                                <button class="spinner-btn up" onclick="adjustTimer('minutes', 1)">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                                </button>
+                                <input type="number" id="timerMinutes" value="5" min="0" max="59" class="timer-input">
+                                <button class="spinner-btn down" onclick="adjustTimer('minutes', -1)">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <span class="timer-colon">:</span>
+                        <div class="timer-input-col">
+                            <label>Saniye</label>
+                            <div class="timer-spinner">
+                                <button class="spinner-btn up" onclick="adjustTimer('seconds', 1)">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                                </button>
+                                <input type="number" id="timerSeconds" value="0" min="0" max="59" class="timer-input">
+                                <button class="spinner-btn down" onclick="adjustTimer('seconds', -1)">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timer-presets">
+                        <button class="preset-btn" onclick="setTimerPreset(1)">1 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(3)">3 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(5)">5 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(10)">10 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(15)">15 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(25)">25 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(30)">30 dk</button>
+                        <button class="preset-btn" onclick="setTimerPreset(60)">1 saat</button>
+                    </div>
+                </div>
+
+                <!-- Timer Running Display -->
+                <div class="timer-running" id="timerRunning" style="display:none;">
+                    <div class="timer-ring-container">
+                        <svg class="timer-ring" viewBox="0 0 200 200">
+                            <circle class="timer-ring-bg" cx="100" cy="100" r="90" fill="none" stroke-width="4"/>
+                            <circle class="timer-ring-progress" id="timerRingProgress" cx="100" cy="100" r="90" fill="none" stroke-width="4" stroke-dasharray="565.48" stroke-dashoffset="0"/>
+                        </svg>
+                        <div class="timer-ring-display">
+                            <span id="timerDisplay">00:00:00</span>
+                            <span class="timer-label" id="timerLabel">kalan süre</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timer-controls">
+                    <button class="control-btn secondary" id="timerResetBtn" onclick="timerReset()" style="display:none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Sıfırla</span>
+                    </button>
+                    <button class="control-btn primary large" id="timerStartBtn" onclick="timerToggle()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="timerPlayIcon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="timerPauseIcon" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOCUS MODE TAB -->
+        <section class="tab-content" id="tab-focus">
+            <button class="fullscreen-btn" id="fsFocusBtn" onclick="toggleFullscreen('focus')" title="Tam Ekran (F)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-expand"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fs-shrink" style="display:none"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+            </button>
+            <div class="focus-container">
+                <div class="focus-header">
+                    <h2 class="focus-title">Odaklanma Modu</h2>
+                    <p class="focus-subtitle">Pomodoro tekniği ile üretkenliğinizi artırın</p>
+                </div>
+
+                <div class="focus-modes">
+                    <button class="focus-mode-btn active" data-duration="25" onclick="setFocusMode(this, 25, 5)">
+                        <span class="mode-time">25</span>
+                        <span class="mode-label">Odaklanma</span>
+                    </button>
+                    <button class="focus-mode-btn" data-duration="5" onclick="setFocusMode(this, 5, 0)">
+                        <span class="mode-time">5</span>
+                        <span class="mode-label">Kısa Mola</span>
+                    </button>
+                    <button class="focus-mode-btn" data-duration="15" onclick="setFocusMode(this, 15, 0)">
+                        <span class="mode-time">15</span>
+                        <span class="mode-label">Uzun Mola</span>
+                    </button>
+                    <button class="focus-mode-btn" data-duration="50" onclick="setFocusMode(this, 50, 10)">
+                        <span class="mode-time">50</span>
+                        <span class="mode-label">Derin Odak</span>
+                    </button>
+                </div>
+
+                <div class="focus-timer-container">
+                    <svg class="focus-ring" viewBox="0 0 260 260">
+                        <circle class="focus-ring-bg" cx="130" cy="130" r="120" fill="none" stroke-width="6"/>
+                        <circle class="focus-ring-progress" id="focusRingProgress" cx="130" cy="130" r="120" fill="none" stroke-width="6" stroke-dasharray="753.98" stroke-dashoffset="0"/>
+                    </svg>
+                    <div class="focus-display">
+                        <span class="focus-time" id="focusDisplay">25:00</span>
+                        <span class="focus-status" id="focusStatus">Hazır</span>
+                    </div>
+                </div>
+
+                <div class="focus-controls">
+                    <button class="control-btn secondary" id="focusResetBtn" onclick="focusReset()" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Sıfırla</span>
+                    </button>
+                    <button class="control-btn primary large" id="focusStartBtn" onclick="focusToggle()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="focusPlayIcon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="focusPauseIcon" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    </button>
+                    <button class="control-btn secondary" id="focusSkipBtn" onclick="focusSkip()" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+                        <span>Atla</span>
+                    </button>
+                </div>
+
+                <div class="focus-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="focusSessionCount">0</span>
+                        <span class="stat-label">Tamamlanan</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="focusTotalTime">0 dk</span>
+                        <span class="stat-label">Toplam Odak</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="focusStreak">0</span>
+                        <span class="stat-label">Seri</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Panel -->
+    <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+    <aside class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h3>Ayarlar</h3>
+            <button class="settings-close" onclick="toggleSettings()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="settings-section">
+            <h4>Tema</h4>
+            <div class="theme-grid" id="themeGrid"></div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Yazı Tipi</h4>
+            <div class="font-list" id="fontList"></div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Saat Formatı</h4>
+            <div class="toggle-group">
+                <button class="toggle-btn active" id="format24" onclick="setTimeFormat(24)">24 Saat</button>
+                <button class="toggle-btn" id="format12" onclick="setTimeFormat(12)">12 Saat</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Saat Boyutu</h4>
+            <div class="toggle-group">
+                <button class="toggle-btn" onclick="adjustClockSize(-0.1)">- Küçült</button>
+                <button class="toggle-btn" id="clockSizeDisplay" disabled style="color: var(--text-primary); opacity: 1;">100%</button>
+                <button class="toggle-btn" onclick="adjustClockSize(0.1)">+ Büyüt</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Saniye Gösterimi</h4>
+            <div class="toggle-group">
+                <button class="toggle-btn active" id="secondsOn" onclick="toggleSeconds(true)">Göster</button>
+                <button class="toggle-btn" id="secondsOff" onclick="toggleSeconds(false)">Gizle</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Salise Gösterimi</h4>
+            <div class="toggle-group">
+                <button class="toggle-btn active" id="msOn" onclick="toggleMilliseconds(true)">Göster</button>
+                <button class="toggle-btn" id="msOff" onclick="toggleMilliseconds(false)">Gizle</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Analog Saat</h4>
+            <div class="toggle-group">
+                <button class="toggle-btn" id="analogOn" onclick="toggleAnalog(true)">Göster</button>
+                <button class="toggle-btn active" id="analogOff" onclick="toggleAnalog(false)">Gizle</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Sol Panel</h4>
+            <div class="toggle-group triple">
+                <button class="toggle-btn active" id="sidebarFull" onclick="setSidebarMode('full')">Açık</button>
+                <button class="toggle-btn" id="sidebarMini" onclick="setSidebarMode('mini')">Küçük</button>
+                <button class="toggle-btn" id="sidebarHidden" onclick="setSidebarMode('hidden')">Gizli</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Timer Complete Modal -->
+    <div class="modal-overlay" id="timerModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-icon pulse-anim">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <h3 class="modal-title" id="modalTitle">Süre Doldu!</h3>
+            <p class="modal-message" id="modalMessage">Zamanlayıcı tamamlandı.</p>
+            <button class="control-btn primary" onclick="closeModal()">
+                <span>Tamam</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio for timer alarm -->
+    <audio id="alarmSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGFAAAAAgA==" type="audio/wav">
+    </audio>
+
+    <script src="app.js"></script>
+</body>
+</html>
