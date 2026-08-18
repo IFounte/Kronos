@@ -234,7 +234,8 @@
 [data-theme$="-nature"] .lap-item,
 [data-theme$="-nature"] .modal-content,
 [data-theme$="-nature"] .font-card,
-[data-theme$="-nature"] .theme-card {
+[data-theme$="-nature"] .theme-card,
+[data-theme$="-nature"] .focus-mode-btn {
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
 }
@@ -1289,19 +1290,19 @@ body.no-blink-colon .time-separator {
     color: var(--text-secondary);
 }
 
-.focus-mode-selector {
+.focus-modes {
     display: flex;
-    gap: 8px;
-    background: var(--bg-card);
-    padding: 4px;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    max-width: 480px;
 }
 
-.mode-btn {
-    padding: 10px 16px;
-    border: none;
-    background: transparent;
+.focus-mode-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
     color: var(--text-secondary);
     border-radius: var(--radius-md);
     cursor: pointer;
@@ -1310,30 +1311,45 @@ body.no-blink-colon .time-separator {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+    min-width: 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-.mode-btn:hover {
+.focus-mode-btn:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
     color: var(--text-primary);
+    transform: translateY(-2px);
 }
 
-.mode-btn.active {
+.focus-mode-btn.active {
     border-color: var(--accent);
     background: var(--accent-soft);
     color: var(--accent);
+    box-shadow: 0 0 16px var(--accent-glow);
 }
 
-.mode-time {
+.focus-mode-btn .mode-time {
     font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 700;
+    line-height: 1;
+    color: inherit;
 }
 
-.mode-label {
-    font-size: 0.7rem;
+.focus-mode-btn .mode-label {
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     font-weight: 600;
+    white-space: nowrap;
+    opacity: 0.85;
+}
+
+.focus-mode-btn.active .mode-label {
+    opacity: 1;
 }
 
 .focus-timer-container {
