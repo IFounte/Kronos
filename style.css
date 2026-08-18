@@ -203,6 +203,87 @@
 }
 [data-theme="rain-nature"] .ambient-glow, [data-theme="rain-nature"] .ambient-glow-2 { display: none; }
 
+/* ── Theme: Aurora Nature (Kutup Işıkları) ── */
+[data-theme="aurora-nature"] body {
+    background-image: url('assets/aurora_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="aurora-nature"] .ambient-glow, [data-theme="aurora-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Cyberpunk Nature (Siber Şehir) ── */
+[data-theme="cyberpunk-nature"] body {
+    background-image: url('assets/cyberpunk_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="cyberpunk-nature"] .ambient-glow, [data-theme="cyberpunk-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Autumn Nature (Sonbahar) ── */
+[data-theme="autumn-nature"] body {
+    background-image: url('assets/autumn_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="autumn-nature"] .ambient-glow, [data-theme="autumn-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Deep Space Nature (Derin Uzay) ── */
+[data-theme="space-nature"] body {
+    background-image: url('assets/space_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="space-nature"] .ambient-glow, [data-theme="space-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Sakura Garden Nature (Sakura Bahçesi) ── */
+[data-theme="sakura-nature"] body {
+    background-image: url('assets/sakura_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="sakura-nature"] .ambient-glow, [data-theme="sakura-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Volcano Nature (Volkanik Lav) ── */
+[data-theme="volcano-nature"] body {
+    background-image: url('assets/volcano_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="volcano-nature"] .ambient-glow, [data-theme="volcano-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Bamboo Waterfall Nature (Bambu & Şelale) ── */
+[data-theme="bamboo-nature"] body {
+    background-image: url('assets/bamboo_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="bamboo-nature"] .ambient-glow, [data-theme="bamboo-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Selimiye Mosque (Selimiye Camii) ── */
+[data-theme="selimiye-nature"] body {
+    background-image: url('assets/selimiye_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="selimiye-nature"] .ambient-glow, [data-theme="selimiye-nature"] .ambient-glow-2 { display: none; }
+
+/* ── Theme: Holy Kaaba (Kâbe-i Muazzama) ── */
+[data-theme="kaba-nature"] body {
+    background-image: url('assets/kaba_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-theme="kaba-nature"] .ambient-glow, [data-theme="kaba-nature"] .ambient-glow-2 { display: none; }
+
 /* ── Wallpaper Ambient Dim & Blur Overlay ── */
 [data-theme$="-nature"] body::before {
     content: '';
@@ -535,7 +616,7 @@ body {
     position: relative;
     z-index: 10;
     flex-shrink: 0;
-    transition: background var(--transition-slow), border-color var(--transition-slow);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, background var(--transition-slow), border-color var(--transition-slow);
 }
 
 .sidebar-logo {
@@ -615,38 +696,38 @@ body {
 
 .sidebar-bottom {
     border-top: 1px solid var(--border);
-    padding-top: 12px;
+    padding-top: 10px;
     margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-/* ── Sidebar Modes ── */
-body.sidebar-mini .sidebar {
-    width: 80px;
+.sidebar-hide-btn {
+    color: var(--text-tertiary);
 }
 
-body.sidebar-mini .logo-text,
-body.sidebar-mini .nav-btn span,
-body.sidebar-mini .sidebar-bottom span {
-    display: none;
+.sidebar-hide-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
 }
 
-body.sidebar-mini .main-content {
-    margin-left: 80px;
-}
-
+/* ── Sidebar Hidden State ── */
 body.sidebar-hidden .sidebar {
     transform: translateX(-100%);
     opacity: 0;
     pointer-events: none;
+    position: absolute;
 }
 
 body.sidebar-hidden .main-content {
     margin-left: 0;
+    width: 100vw;
 }
 
-/* Floating Sidebar Toggle Button */
-.sidebar-toggle-btn {
-    position: absolute;
+/* ── Floating Sidebar Open Button (Top-Left) ── */
+.floating-sidebar-btn {
+    position: fixed;
     top: 24px;
     left: 24px;
     width: 44px;
@@ -659,16 +740,19 @@ body.sidebar-hidden .main-content {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 25;
+    z-index: 50;
     transition: all var(--transition-fast);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
-.sidebar-toggle-btn.visible {
+body.sidebar-hidden .floating-sidebar-btn {
     display: flex;
+    animation: fadeIn 0.25s ease-out;
 }
 
-.sidebar-toggle-btn:hover {
+.floating-sidebar-btn:hover {
     background: var(--accent-soft);
     border-color: var(--accent);
     color: var(--accent);

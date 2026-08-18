@@ -13,7 +13,7 @@ const state = {
     showDate: true,
     blinkColon: true,
     clockScale: 1,
-    sidebarMode: 'full',
+    sidebarHidden: false,
     currentTheme: 'custom',
     customBg: '#0a0a0f',
     customAccent: '#6366f1',
@@ -66,6 +66,15 @@ const themes = [
     { id: 'beach-nature', name: '🏖️ Plaj', color1: '#38bdf8', color2: '#f59e0b' },
     { id: 'night-nature', name: '🌌 Gece', color1: '#a78bfa', color2: '#38bdf8' },
     { id: 'rain-nature', name: '🌧️ Yağmur', color1: '#0284c7', color2: '#64748b' },
+    { id: 'aurora-nature', name: '✨ Kutup Işıkları', color1: '#00f5a0', color2: '#7928ca' },
+    { id: 'cyberpunk-nature', name: '🌆 Siber Şehir', color1: '#f43f5e', color2: '#00f0ff' },
+    { id: 'autumn-nature', name: '🍂 Sonbahar', color1: '#f97316', color2: '#ef4444' },
+    { id: 'space-nature', name: '🌌 Derin Uzay', color1: '#a855f7', color2: '#38bdf8' },
+    { id: 'sakura-nature', name: '🌸 Sakura Bahçesi', color1: '#f472b6', color2: '#fb7185' },
+    { id: 'volcano-nature', name: '🌋 Volkanik Lav', color1: '#ff4500', color2: '#ef4444' },
+    { id: 'bamboo-nature', name: '🎋 Bambu & Şelale', color1: '#10b981', color2: '#34d399' },
+    { id: 'selimiye-nature', name: '🕌 Selimiye Camii', color1: '#f59e0b', color2: '#38bdf8' },
+    { id: 'kaba-nature', name: '🕋 Kâbe-i Muazzama', color1: '#eab308', color2: '#1e293b' },
 ];
 
 // ── Fonts ──
@@ -157,7 +166,11 @@ function loadSettings() {
         if (s.showDate !== undefined) toggleDate(s.showDate, false);
         if (s.blinkColon !== undefined) toggleBlinkColon(s.blinkColon, false);
         if (s.clockScale !== undefined) setClockSize(s.clockScale, false);
-        if (s.sidebarMode) setSidebarMode(s.sidebarMode, false);
+        if (s.sidebarHidden !== undefined) {
+            toggleSidebar(!s.sidebarHidden, false);
+        } else if (s.sidebarMode !== undefined) {
+            toggleSidebar(s.sidebarMode !== 'hidden', false);
+        }
         if (s.focusSessions) state.focusSessions = s.focusSessions;
         if (s.focusTotalMinutes) state.focusTotalMinutes = s.focusTotalMinutes;
         if (s.focusStreak) state.focusStreak = s.focusStreak;
@@ -190,7 +203,7 @@ function saveSettings() {
         showDate: state.showDate,
         blinkColon: state.blinkColon,
         clockScale: state.clockScale,
-        sidebarMode: state.sidebarMode,
+        sidebarHidden: state.sidebarHidden,
         focusSessions: state.focusSessions,
         focusTotalMinutes: state.focusTotalMinutes,
         focusStreak: state.focusStreak,
@@ -917,13 +930,86 @@ function applyThemeColors(themeId, bgColor, accentColor, digitColor, gradientCol
 }
 
 const defaultThemeAccents = {
-    'custom': { bg: '#0a0a0f', accent: '#6366f1', digit: '#ffffff', gradient: '#a855f7' },
-    'forest-nature': { bg: '#061209', accent: '#a3e635', digit: '#e6f0e6', gradient: '#a3e635' },
-    'desert-nature': { bg: '#140c06', accent: '#f59e0b', digit: '#fef3c7', gradient: '#f59e0b' },
-    'snowy-nature': { bg: '#0b131e', accent: '#7dd3fc', digit: '#ffffff', gradient: '#38bdf8' },
-    'beach-nature': { bg: '#061219', accent: '#38bdf8', digit: '#e0f2fe', gradient: '#38bdf8' },
-    'night-nature': { bg: '#080714', accent: '#a78bfa', digit: '#ede9fe', gradient: '#38bdf8' },
-    'rain-nature': { bg: '#090e16', accent: '#38bdf8', digit: '#e2e8f0', gradient: '#38bdf8' },
+    'custom': { 
+        bg: '#0a0a0f', accent: '#6366f1', digit: '#ffffff', gradient: '#a855f7',
+        textGradient: { enabled: true, angle: 135, colors: ['#a855f7', '#6366f1', '#ffffff'], animated: false, animSpeed: 6 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#6366f1', '#ec4899'], animated: false, animSpeed: 6 }
+    },
+    'forest-nature': { 
+        bg: '#061209', accent: '#a3e635', digit: '#e6f0e6', gradient: '#a3e635',
+        textGradient: { enabled: true, angle: 135, colors: ['#a3e635', '#4ade80', '#ffffff'], animated: false, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#22c55e', '#a3e635', '#86efac'], animated: false, animSpeed: 8 }
+    },
+    'desert-nature': { 
+        bg: '#140c06', accent: '#f59e0b', digit: '#fef3c7', gradient: '#f59e0b',
+        textGradient: { enabled: true, angle: 135, colors: ['#f59e0b', '#fbbf24', '#ffffff'], animated: false, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#f59e0b', '#ea580c', '#fef08a'], animated: false, animSpeed: 8 }
+    },
+    'snowy-nature': { 
+        bg: '#0b131e', accent: '#7dd3fc', digit: '#ffffff', gradient: '#38bdf8',
+        textGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#7dd3fc', '#ffffff'], animated: false, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#e0f2fe', '#0284c7'], animated: false, animSpeed: 8 }
+    },
+    'beach-nature': { 
+        bg: '#061219', accent: '#38bdf8', digit: '#e0f2fe', gradient: '#38bdf8',
+        textGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#06b6d4', '#fef08a'], animated: false, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#f59e0b', '#06b6d4'], animated: false, animSpeed: 8 }
+    },
+    'night-nature': { 
+        bg: '#080714', accent: '#a78bfa', digit: '#ede9fe', gradient: '#38bdf8',
+        textGradient: { enabled: true, angle: 135, colors: ['#a78bfa', '#818cf8', '#ffffff'], animated: false, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#a78bfa', '#38bdf8', '#c084fc'], animated: false, animSpeed: 8 }
+    },
+    'rain-nature': { 
+        bg: '#090e16', accent: '#38bdf8', digit: '#e2e8f0', gradient: '#38bdf8',
+        textGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#93c5fd', '#ffffff'], animated: false, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#38bdf8', '#60a5fa', '#e0f2fe'], animated: false, animSpeed: 8 }
+    },
+    'aurora-nature': { 
+        bg: '#040d1a', accent: '#00f5a0', digit: '#e0fbf2', gradient: '#00f5a0',
+        textGradient: { enabled: true, angle: 135, colors: ['#00f5a0', '#00d9f5', '#a855f7', '#ffffff'], animated: true, animSpeed: 8 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#00f5a0', '#06b6d4', '#7928ca', '#10b981'], animated: true, animSpeed: 7 }
+    },
+    'cyberpunk-nature': { 
+        bg: '#080811', accent: '#f43f5e', digit: '#ffebf3', gradient: '#00f0ff',
+        textGradient: { enabled: true, angle: 135, colors: ['#ff007f', '#00f0ff', '#7928ca', '#facc15'], animated: true, animSpeed: 6 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#00f0ff', '#f43f5e', '#a855f7', '#ff007f'], animated: true, animSpeed: 5 }
+    },
+    'autumn-nature': { 
+        bg: '#140905', accent: '#f97316', digit: '#fff3e0', gradient: '#f97316',
+        textGradient: { enabled: true, angle: 135, colors: ['#f97316', '#f59e0b', '#ef4444', '#fef08a'], animated: true, animSpeed: 9 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#ef4444', '#f97316', '#fbbf24', '#b91c1c'], animated: true, animSpeed: 8 }
+    },
+    'space-nature': { 
+        bg: '#04040c', accent: '#a855f7', digit: '#f3e8ff', gradient: '#38bdf8',
+        textGradient: { enabled: true, angle: 135, colors: ['#c084fc', '#818cf8', '#38bdf8', '#f472b6'], animated: true, animSpeed: 9 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#a855f7', '#3b82f6', '#ec4899', '#06b6d4'], animated: true, animSpeed: 8 }
+    },
+    'sakura-nature': { 
+        bg: '#12070c', accent: '#f472b6', digit: '#fff1f2', gradient: '#fb7185',
+        textGradient: { enabled: true, angle: 135, colors: ['#fb7185', '#f472b6', '#fbcfe8', '#ffffff'], animated: true, animSpeed: 10 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#ec4899', '#f472b6', '#fed7aa', '#fb7185'], animated: true, animSpeed: 9 }
+    },
+    'volcano-nature': { 
+        bg: '#120502', accent: '#ff4500', digit: '#fff7ed', gradient: '#ef4444',
+        textGradient: { enabled: true, angle: 135, colors: ['#ef4444', '#f97316', '#facc15', '#dc2626'], animated: true, animSpeed: 7 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#f97316', '#ef4444', '#f59e0b', '#b91c1c'], animated: true, animSpeed: 6 }
+    },
+    'bamboo-nature': { 
+        bg: '#030f08', accent: '#10b981', digit: '#ecfdf5', gradient: '#34d399',
+        textGradient: { enabled: true, angle: 135, colors: ['#34d399', '#06b6d4', '#a7f3d0', '#ffffff'], animated: true, animSpeed: 10 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#10b981', '#34d399', '#38bdf8', '#059669'], animated: true, animSpeed: 9 }
+    },
+    'selimiye-nature': { 
+        bg: '#0a0c14', accent: '#f59e0b', digit: '#fef9c3', gradient: '#eab308',
+        textGradient: { enabled: true, angle: 135, colors: ['#f59e0b', '#fbbf24', '#fef08a', '#ffffff'], animated: true, animSpeed: 10 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#eab308', '#f59e0b', '#38bdf8', '#fbbf24'], animated: true, animSpeed: 9 }
+    },
+    'kaba-nature': { 
+        bg: '#08080a', accent: '#eab308', digit: '#ffffff', gradient: '#facc15',
+        textGradient: { enabled: true, angle: 135, colors: ['#eab308', '#facc15', '#ffffff', '#fde047'], animated: true, animSpeed: 10 },
+        ringGradient: { enabled: true, angle: 135, colors: ['#ca8a04', '#eab308', '#ffffff', '#fde047'], animated: true, animSpeed: 9 }
+    },
 };
 
 function applyCustomTheme(bgColor, accentColor, digitColor, gradientColor, save = true) {
@@ -936,6 +1022,14 @@ function setTheme(themeId, save = true) {
     if (defaults.accent) state.customAccent = defaults.accent;
     state.customDigitColor = defaults.digit || '#ffffff';
     state.customGradientEnd = defaults.gradient || '#38bdf8';
+    
+    if (defaults.textGradient) {
+        state.textGradient = JSON.parse(JSON.stringify(defaults.textGradient));
+    }
+    if (defaults.ringGradient) {
+        state.ringGradient = JSON.parse(JSON.stringify(defaults.ringGradient));
+    }
+
     applyThemeColors(themeId, state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, save);
 }
 
@@ -957,6 +1051,13 @@ function resetThemeColorsToDefault() {
     state.customAccent = defaults.accent;
     state.customDigitColor = defaults.digit || '#ffffff';
     state.customGradientEnd = defaults.gradient || '#38bdf8';
+
+    if (defaults.textGradient) {
+        state.textGradient = JSON.parse(JSON.stringify(defaults.textGradient));
+    }
+    if (defaults.ringGradient) {
+        state.ringGradient = JSON.parse(JSON.stringify(defaults.ringGradient));
+    }
     
     applyThemeColors(currentTheme, state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, true);
 }
@@ -1666,27 +1767,14 @@ function setClockSize(scale, save = true) {
     if (save) saveSettings();
 }
 
-function setSidebarMode(mode, save = true) {
-    state.sidebarMode = mode;
-    const body = document.body;
-    body.classList.remove('sidebar-full', 'sidebar-mini', 'sidebar-hidden');
-    body.classList.add(`sidebar-${mode}`);
+function toggleSidebar(show, save = true) {
+    const isCurrentlyHidden = document.body.classList.contains('sidebar-hidden');
+    const shouldShow = show !== undefined ? show : isCurrentlyHidden;
     
-    document.getElementById('sidebarFull').classList.toggle('active', mode === 'full');
-    document.getElementById('sidebarMini').classList.toggle('active', mode === 'mini');
-    document.getElementById('sidebarHidden').classList.toggle('active', mode === 'hidden');
-    
-    // Show/hide the floating toggle button
-    document.getElementById('sidebarToggleBtn').classList.toggle('visible', mode === 'hidden');
+    state.sidebarHidden = !shouldShow;
+    document.body.classList.toggle('sidebar-hidden', !shouldShow);
     
     if (save) saveSettings();
-}
-
-function cycleSidebar() {
-    const modes = ['full', 'mini', 'hidden'];
-    const currentIdx = modes.indexOf(state.sidebarMode);
-    const nextIdx = (currentIdx + 1) % modes.length;
-    setSidebarMode(modes[nextIdx]);
 }
 
 // ═══════════════════════════════════════
@@ -1851,7 +1939,7 @@ document.addEventListener('keydown', (e) => {
         case '4': document.getElementById('nav-focus').click(); break;
         case 'p':
         case 'P':
-            cycleSidebar();
+            toggleSidebar();
             break;
         case 'f':
         case 'F':
