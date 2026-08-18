@@ -2828,19 +2828,20 @@ body.fullscreen-mode #tab-clock .second-hand {
 }
 
 /* ── Stopwatch Fullscreen ── */
+body.fullscreen-mode #tab-stopwatch .sw-hours,
 body.fullscreen-mode #tab-stopwatch .sw-minutes,
 body.fullscreen-mode #tab-stopwatch .sw-seconds {
-    font-size: calc(12rem * var(--clock-scale, 1));
+    font-size: calc(11rem * var(--clock-scale, 1));
     transition: font-size var(--transition-slow);
 }
 
 body.fullscreen-mode #tab-stopwatch .sw-separator {
-    font-size: calc(11rem * var(--clock-scale, 1));
+    font-size: calc(10rem * var(--clock-scale, 1));
 }
 
 body.fullscreen-mode #tab-stopwatch .sw-ms {
-    font-size: calc(5rem * var(--clock-scale, 1));
-    min-width: 140px;
+    font-size: calc(4.5rem * var(--clock-scale, 1));
+    min-width: 130px;
 }
 
 body.fullscreen-mode #tab-stopwatch .stopwatch-container {
@@ -2947,6 +2948,7 @@ body .time-hours,
 body .time-minutes,
 body .time-separator,
 body .time-seconds-small,
+body .sw-hours,
 body .sw-minutes,
 body .sw-seconds,
 body .sw-separator,
@@ -2979,18 +2981,19 @@ body.fullscreen-mode .stopwatch-container.running .stopwatch-display {
     cursor: pointer;
 }
 
+body.fullscreen-mode .stopwatch-container.running .stopwatch-display .sw-hours,
 body.fullscreen-mode .stopwatch-container.running .stopwatch-display .sw-minutes,
 body.fullscreen-mode .stopwatch-container.running .stopwatch-display .sw-seconds {
-    font-size: 16rem;
+    font-size: calc(13rem * var(--clock-scale, 1));
 }
 
 body.fullscreen-mode .stopwatch-container.running .stopwatch-display .sw-separator {
-    font-size: 14rem;
+    font-size: calc(11.5rem * var(--clock-scale, 1));
 }
 
 body.fullscreen-mode .stopwatch-container.running .stopwatch-display .sw-ms {
-    font-size: 6.5rem;
-    min-width: 180px;
+    font-size: calc(5.5rem * var(--clock-scale, 1));
+    min-width: 150px;
 }
 
 /* Hide fullscreen button when running */
@@ -3226,7 +3229,7 @@ body.fullscreen-mode #tab-focus:has(.focus-container.running) .fullscreen-btn {
         margin-bottom: calc(8px * var(--clock-scale, 1));
     }
     
-    .sw-minutes, .sw-seconds {
+    .sw-hours, .sw-minutes, .sw-seconds {
         font-size: calc(4.5rem * var(--clock-scale, 1));
     }
     .sw-separator {
@@ -3296,11 +3299,13 @@ body.fullscreen-mode #tab-focus:has(.focus-container.running) .fullscreen-btn {
         margin: 0 auto !important;
     }
 
+    body.fullscreen-mode #tab-stopwatch .sw-hours,
     body.fullscreen-mode #tab-stopwatch .sw-minutes,
     body.fullscreen-mode #tab-stopwatch .sw-seconds,
+    body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-hours,
     body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-minutes,
     body.fullscreen-mode #tab-stopwatch .stopwatch-container.running .stopwatch-display .sw-seconds {
-        font-size: calc(4.5rem * var(--clock-scale, 1)) !important;
+        font-size: calc(4rem * var(--clock-scale, 1)) !important;
     }
 
     body.fullscreen-mode #tab-stopwatch .sw-separator,
