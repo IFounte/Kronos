@@ -18,10 +18,20 @@ const state = {
     customBg: '#0a0a0f',
     customAccent: '#6366f1',
     customDigitColor: '#ffffff',
-    customGradientEnd: '#38bdf8',
     gradientEnabled: true,
     gradientPercent: 50,
     gradientAngle: 135,
+    textGradient: {
+        enabled: true,
+        angle: 135,
+        colors: ['#a855f7', '#6366f1', '#ffffff']
+    },
+    ringGradient: {
+        enabled: true,
+        angle: 135,
+        colors: ['#38bdf8', '#6366f1', '#ec4899']
+    },
+    activeGradientTab: 'text',
     currentFont: 'inter',
     // Stopwatch
     swRunning: false,
@@ -114,11 +124,30 @@ function loadSettings() {
         } else {
             applyThemeColors('custom', state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, false);
         }
-        if (s.gradientEnabled !== undefined) toggleGradient(s.gradientEnabled, false);
-        if (s.gradientPercent !== undefined) setGradientPercent(s.gradientPercent, false);
-        else setGradientPercent(50, false);
-        if (s.gradientAngle !== undefined) setGradientAngle(s.gradientAngle, false);
-        else setGradientAngle(135, false);
+        
+        if (s.textGradient) {
+            state.textGradient = s.textGradient;
+        } else if (s.gradientEnabled !== undefined || s.customGradientEnd) {
+            state.textGradient = {
+                enabled: s.gradientEnabled ?? true,
+                angle: s.gradientAngle ?? 135,
+                colors: [s.customGradientEnd || '#a855f7', s.customAccent || '#6366f1', s.customDigitColor || '#ffffff']
+            };
+        }
+
+        if (s.ringGradient) {
+            state.ringGradient = s.ringGradient;
+        } else if (s.customGradientEnd || s.customAccent) {
+            state.ringGradient = {
+                enabled: s.gradientEnabled ?? true,
+                angle: s.gradientAngle ?? 135,
+                colors: [s.customGradientEnd || '#38bdf8', s.customAccent || '#6366f1', '#ec4899']
+            };
+        }
+
+        applyGradientsToDOM();
+        renderGradientStudio();
+
         if (s.font) setFont(s.font, false);
         if (s.timeFormat) setTimeFormat(s.timeFormat, false);
         if (s.showAnalog !== undefined) toggleAnalog(s.showAnalog, false);
@@ -134,6 +163,8 @@ function loadSettings() {
         if (s.focusStreak) state.focusStreak = s.focusStreak;
     } else {
         setTheme('custom', false);
+        applyGradientsToDOM();
+        renderGradientStudio();
     }
     updateFocusStats();
 }
@@ -145,6 +176,8 @@ function saveSettings() {
         customAccent: state.customAccent,
         customDigitColor: state.customDigitColor,
         customGradientEnd: state.customGradientEnd,
+        textGradient: state.textGradient,
+        ringGradient: state.ringGradient,
         gradientEnabled: state.gradientEnabled,
         gradientPercent: state.gradientPercent,
         gradientAngle: state.gradientAngle,
@@ -878,6 +911,8 @@ function applyThemeColors(themeId, bgColor, accentColor, digitColor, gradientCol
         if (lightningContainer) lightningContainer.classList.remove('flash-active');
     }
 
+    applyGradientsToDOM();
+    renderGradientStudio();
     if (save) saveSettings();
 }
 
@@ -907,13 +942,11 @@ function setTheme(themeId, save = true) {
 function updateCustomColorsFromInput() {
     const bgVal = document.getElementById('customBgInput')?.value || state.customBg;
     const accentVal = document.getElementById('customAccentInput')?.value || state.customAccent;
-    const digitVal = document.getElementById('customDigitInput')?.value || state.customDigitColor;
-    const gradientVal = document.getElementById('customGradientInput')?.value || state.customGradientEnd;
-    applyThemeColors(state.currentTheme, bgVal, accentVal, digitVal, gradientVal, true);
+    applyThemeColors(state.currentTheme, bgVal, accentVal, state.customDigitColor, state.customGradientEnd, true);
 }
 
-function setPresetCustomColors(bgHex, accentHex, digitHex = '#ffffff', gradientHex = '#38bdf8') {
-    applyThemeColors(state.currentTheme, bgHex, accentHex, digitHex, gradientHex, true);
+function setPresetCustomColors(bgHex, accentHex) {
+    applyThemeColors(state.currentTheme, bgHex, accentHex, state.customDigitColor, state.customGradientEnd, true);
 }
 
 function resetThemeColorsToDefault() {
@@ -928,58 +961,124 @@ function resetThemeColorsToDefault() {
     applyThemeColors(currentTheme, state.customBg, state.customAccent, state.customDigitColor, state.customGradientEnd, true);
 }
 
-function toggleGradient(enable, save = true) {
-    state.gradientEnabled = enable;
-    document.body.classList.toggle('no-gradient', !enable);
-    const onBtn = document.getElementById('gradientOn');
-    const offBtn = document.getElementById('gradientOff');
-    if (onBtn) onBtn.classList.toggle('active', enable);
-    if (offBtn) offBtn.classList.toggle('active', !enable);
-    
-    const gradientPicker = document.getElementById('gradientPickerItem');
-    if (gradientPicker) {
-        gradientPicker.style.opacity = enable ? '1' : '0.35';
-        gradientPicker.style.pointerEvents = enable ? 'auto' : 'none';
+// ═══════════════════════════════════════
+// GELİŞMİŞ GRADYAN STÜDYOSU (STUDIO CONTROLLERS)
+// ═══════════════════════════════════════
+function toggleGradientStudioAccordion() {
+    const section = document.getElementById('gradientStudioSection');
+    if (section) {
+        section.classList.toggle('open');
     }
+}
 
-    const controlsWrapper = document.getElementById('gradientControlsWrapper');
-    if (controlsWrapper) {
-        controlsWrapper.style.opacity = enable ? '1' : '0.35';
-        controlsWrapper.style.pointerEvents = enable ? 'auto' : 'none';
-    }
+function switchGradientTab(tab) {
+    state.activeGradientTab = tab;
+    document.getElementById('gradTabBtn-text')?.classList.toggle('active', tab === 'text');
+    document.getElementById('gradTabBtn-ring')?.classList.toggle('active', tab === 'ring');
+    renderGradientStudio();
+}
 
+function getCurrentGradientTarget() {
+    return state.activeGradientTab === 'text' ? state.textGradient : state.ringGradient;
+}
+
+function toggleCurrentGradientTarget(enabled, save = true) {
+    const target = getCurrentGradientTarget();
+    target.enabled = enabled;
+    applyGradientsToDOM();
+    renderGradientStudio();
     if (save) saveSettings();
 }
 
-function setGradientPercent(percent, save = true) {
-    const val = Math.min(90, Math.max(10, parseInt(percent, 10) || 50));
-    state.gradientPercent = val;
-    document.documentElement.style.setProperty('--gradient-percent', `${val}%`);
-    
-    const slider = document.getElementById('gradientSlider');
-    const badge = document.getElementById('gradientPercentBadge');
-    const subBadge = document.getElementById('gradientPercentSubBadge');
-    if (slider && parseInt(slider.value, 10) !== val) {
-        slider.value = val;
-    }
-    if (badge) {
-        badge.textContent = `%${val}`;
-    }
-    if (subBadge) {
-        subBadge.textContent = `%${val}`;
-    }
+function toggleCurrentGradientAnimation(enabled, save = true) {
+    const target = getCurrentGradientTarget();
+    target.animated = enabled;
+    applyGradientsToDOM();
+    renderGradientStudio();
     if (save) saveSettings();
 }
 
-function setGradientAngle(angle, save = true) {
+function setGradientAnimSpeed(speed, save = true) {
+    const val = Math.max(1, Math.min(60, parseInt(speed, 10) || 6));
+    const target = getCurrentGradientTarget();
+    target.animSpeed = val;
+    
+    const badge = document.getElementById('gradAnimSpeedBadge');
+    if (badge) badge.textContent = `${val} sn`;
+    
+    applyGradientsToDOM();
+    if (save) saveSettings();
+}
+
+function addGradientColor() {
+    const target = getCurrentGradientTarget();
+    if (target.colors.length >= 5) return;
+    
+    // Pick dynamic vibrant color
+    const palette = ['#00f0ff', '#f43f5e', '#a855f7', '#facc15', '#10b981', '#3b82f6', '#ec4899', '#f97316'];
+    const newColor = palette[target.colors.length % palette.length] || '#38bdf8';
+    target.colors.push(newColor);
+    
+    applyGradientsToDOM();
+    renderGradientStudio();
+    saveSettings();
+}
+
+function removeGradientColor(index) {
+    const target = getCurrentGradientTarget();
+    if (target.colors.length <= 2) return;
+    target.colors.splice(index, 1);
+    applyGradientsToDOM();
+    renderGradientStudio();
+    saveSettings();
+}
+
+function updateGradientColor(index, newColor, isInput = false) {
+    const target = getCurrentGradientTarget();
+    if (target.colors[index] !== undefined) {
+        target.colors[index] = newColor;
+        applyGradientsToDOM();
+        
+        // Fast in-place DOM updates without destroying the color input during drag/interaction:
+        const itemEl = document.querySelector(`.gradient-stop-item[data-index="${index}"]`);
+        if (itemEl) {
+            const hexEl = itemEl.querySelector('.stop-hex-label');
+            if (hexEl) hexEl.textContent = newColor;
+            const wrapEl = itemEl.querySelector('.stop-color-input-wrapper');
+            if (wrapEl) wrapEl.style.backgroundColor = newColor;
+        }
+        
+        updateStudioPreviewBar();
+        
+        if (!isInput) {
+            saveSettings();
+        }
+    }
+}
+
+function updateStudioPreviewBar() {
+    const target = getCurrentGradientTarget();
+    if (!target) return;
+    const previewBar = document.getElementById('gradientLivePreviewBar');
+    const previewAngleTag = document.getElementById('gradientPreviewAngleTag');
+    if (previewBar && target.colors && target.colors.length > 0) {
+        const stops = target.colors.map((c, i) => `${c} ${(i / (target.colors.length - 1) * 100).toFixed(1)}%`).join(', ');
+        previewBar.style.background = `linear-gradient(${target.angle}deg, ${stops})`;
+    }
+    if (previewAngleTag) {
+        previewAngleTag.textContent = `${target.angle}°`;
+    }
+}
+
+function setStudioAngle(angle, save = true) {
     const val = (parseInt(angle, 10) % 360 + 360) % 360;
-    state.gradientAngle = val;
-    document.documentElement.style.setProperty('--gradient-angle', `${val}deg`);
+    const target = getCurrentGradientTarget();
+    target.angle = val;
     
-    const slider = document.getElementById('gradientAngleSlider');
-    const badge = document.getElementById('gradientAngleBadge');
-    const indicator = document.getElementById('angleDialIndicator');
-    
+    // Fast angle updates without re-rendering stops list
+    const slider = document.getElementById('studioAngleSlider');
+    const badge = document.getElementById('gradStudioAngleBadge');
+    const indicator = document.getElementById('studioAngleDialIndicator');
     if (slider && parseInt(slider.value, 10) !== val) {
         slider.value = val;
     }
@@ -989,51 +1088,313 @@ function setGradientAngle(angle, save = true) {
     if (indicator) {
         indicator.style.transform = `rotate(${val}deg)`;
     }
-    
-    // Update active preset button
-    document.querySelectorAll('.angle-preset-btn').forEach(btn => {
+
+    document.querySelectorAll('.angle-presets-grid .angle-preset-btn').forEach(btn => {
         const btnAngle = parseInt(btn.textContent, 10);
         btn.classList.toggle('active', btnAngle === val);
     });
-    
+
+    updateStudioPreviewBar();
+    applyGradientsToDOM();
     if (save) saveSettings();
 }
 
-// ── Rotatable Dial Event Handlers ──
-let isDraggingAngle = false;
+function applyGradientPreset(colors) {
+    const target = getCurrentGradientTarget();
+    target.colors = [...colors];
+    target.enabled = true;
+    applyGradientsToDOM();
+    renderGradientStudio();
+    saveSettings();
+}
 
-function startAngleDrag(e) {
-    e.preventDefault();
-    isDraggingAngle = true;
-    const dial = document.getElementById('angleDial');
-    if (dial) dial.classList.add('dragging');
-    updateAngleFromEvent(e);
+// ── Rotating Gradient Animation Loop ──
+let gradientAnimFrameId = null;
+
+function applyGradientsToDOM() {
+    // 1. Text Gradient
+    const textTarget = state.textGradient || { enabled: true, angle: 135, colors: ['#a855f7', '#6366f1', '#ffffff'], animated: false, animSpeed: 6 };
+    document.body.classList.toggle('no-text-gradient', !textTarget.enabled);
     
-    window.addEventListener('mousemove', onAngleDragMove);
-    window.addEventListener('mouseup', stopAngleDrag);
-    window.addEventListener('touchmove', onAngleDragMove, { passive: false });
-    window.addEventListener('touchend', stopAngleDrag);
+    if (!textTarget.animated && textTarget.colors && textTarget.colors.length > 0) {
+        const textStops = textTarget.colors.map((c, i) => {
+            const pct = (i / (textTarget.colors.length - 1) * 100).toFixed(1);
+            return `${c} ${pct}%`;
+        }).join(', ');
+        const textGradCss = `linear-gradient(${textTarget.angle}deg, ${textStops})`;
+        document.documentElement.style.setProperty('--text-gradient-css', textGradCss);
+    }
+
+    // 2. Ring Gradient (SVG Definitions)
+    const ringTarget = state.ringGradient || { enabled: true, angle: 135, colors: ['#38bdf8', '#6366f1', '#ec4899'], animated: false, animSpeed: 6 };
+    document.body.classList.toggle('no-ring-gradient', !ringTarget.enabled);
+    
+    const timerGrad = document.getElementById('timerRingGradient');
+    const focusGrad = document.getElementById('focusRingGradient');
+    
+    [timerGrad, focusGrad].forEach(grad => {
+        if (!grad) return;
+        if (!ringTarget.animated) {
+            grad.setAttribute('gradientTransform', `rotate(${ringTarget.angle}, 0.5, 0.5)`);
+        }
+        grad.innerHTML = '';
+        ringTarget.colors.forEach((color, i) => {
+            const pct = (i / (ringTarget.colors.length - 1) * 100).toFixed(1) + '%';
+            const stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop.setAttribute('offset', pct);
+            stop.setAttribute('stop-color', color);
+            grad.appendChild(stop);
+        });
+    });
+
+    // Start or stop rotating animation loop
+    if ((textTarget.enabled && textTarget.animated) || (ringTarget.enabled && ringTarget.animated)) {
+        startGradientAnimationLoop();
+    } else {
+        if (gradientAnimFrameId) {
+            cancelAnimationFrame(gradientAnimFrameId);
+            gradientAnimFrameId = null;
+        }
+    }
 }
 
-function onAngleDragMove(e) {
-    if (!isDraggingAngle) return;
+function startGradientAnimationLoop() {
+    if (gradientAnimFrameId) cancelAnimationFrame(gradientAnimFrameId);
+    
+    function tick(now) {
+        const textTarget = state.textGradient;
+        const ringTarget = state.ringGradient;
+        let isAnyAnimated = false;
+
+        // 1. Animated Text Gradient
+        if (textTarget && textTarget.enabled && textTarget.animated) {
+            isAnyAnimated = true;
+            const speed = Math.max(1, textTarget.animSpeed || 6);
+            const degDelta = ((now / 1000) % speed) / speed * 360;
+            const currentAngle = Math.round((textTarget.angle + degDelta) % 360);
+            
+            if (textTarget.colors && textTarget.colors.length > 0) {
+                const textStops = textTarget.colors.map((c, i) => {
+                    const pct = (i / (textTarget.colors.length - 1) * 100).toFixed(1);
+                    return `${c} ${pct}%`;
+                }).join(', ');
+                document.documentElement.style.setProperty('--text-gradient-css', `linear-gradient(${currentAngle}deg, ${textStops})`);
+            }
+        }
+
+        // 2. Animated Ring Gradient
+        if (ringTarget && ringTarget.enabled && ringTarget.animated) {
+            isAnyAnimated = true;
+            const speed = Math.max(1, ringTarget.animSpeed || 6);
+            const degDelta = ((now / 1000) % speed) / speed * 360;
+            const currentAngle = Math.round((ringTarget.angle + degDelta) % 360);
+            
+            const timerGrad = document.getElementById('timerRingGradient');
+            const focusGrad = document.getElementById('focusRingGradient');
+            [timerGrad, focusGrad].forEach(grad => {
+                if (grad) grad.setAttribute('gradientTransform', `rotate(${currentAngle}, 0.5, 0.5)`);
+            });
+        }
+
+        if (isAnyAnimated) {
+            gradientAnimFrameId = requestAnimationFrame(tick);
+        } else {
+            gradientAnimFrameId = null;
+        }
+    }
+
+    gradientAnimFrameId = requestAnimationFrame(tick);
+}
+
+function renderGradientStudio() {
+    const isText = state.activeGradientTab === 'text';
+    const target = isText ? state.textGradient : state.ringGradient;
+    if (!target) return;
+
+    const nameEl = document.getElementById('gradTargetName');
+    const hintEl = document.getElementById('gradTargetHint');
+    if (nameEl) nameEl.textContent = isText ? 'Yazı & Rakamlar Gradyanı' : 'Süre Çemberi Gradyanı';
+    if (hintEl) hintEl.textContent = isText ? 'Saat, kronometre ve sayaç rakamları' : 'Zamanlayıcı ve Odaklanma Modu ilerleme halkası';
+
+    const onBtn = document.getElementById('gradTargetOn');
+    const offBtn = document.getElementById('gradTargetOff');
+    if (onBtn) onBtn.classList.toggle('active', target.enabled);
+    if (offBtn) offBtn.classList.toggle('active', !target.enabled);
+
+    const controlsEl = document.getElementById('gradTargetControls');
+    if (controlsEl) {
+        controlsEl.style.opacity = target.enabled ? '1' : '0.4';
+        controlsEl.style.pointerEvents = target.enabled ? 'auto' : 'none';
+    }
+
+    // Animation Toggle & Speed controls
+    const animOnBtn = document.getElementById('gradAnimOn');
+    const animOffBtn = document.getElementById('gradAnimOff');
+    const animSpeedContainer = document.getElementById('gradAnimSpeedContainer');
+    const animSpeedSlider = document.getElementById('gradAnimSpeedSlider');
+    const animSpeedBadge = document.getElementById('gradAnimSpeedBadge');
+    
+    if (animOnBtn) animOnBtn.classList.toggle('active', !!target.animated);
+    if (animOffBtn) animOffBtn.classList.toggle('active', !target.animated);
+    if (animSpeedContainer) {
+        animSpeedContainer.style.opacity = target.animated ? '1' : '0.4';
+        animSpeedContainer.style.pointerEvents = target.animated ? 'auto' : 'none';
+    }
+    if (animSpeedSlider) {
+        animSpeedSlider.value = target.animSpeed || 6;
+    }
+    if (animSpeedBadge) {
+        animSpeedBadge.textContent = `${target.animSpeed || 6} sn`;
+    }
+
+    // Live preview bar
+    updateStudioPreviewBar();
+
+    // Color count tag
+    const countTag = document.getElementById('gradColorCountTag');
+    if (countTag) {
+        countTag.textContent = `${target.colors.length} / 5 Renk`;
+    }
+
+    // Add color button disabled status
+    const addBtn = document.getElementById('addGradColorBtn');
+    if (addBtn) {
+        addBtn.disabled = target.colors.length >= 5;
+        addBtn.style.display = target.colors.length >= 5 ? 'none' : 'flex';
+    }
+
+    // Render Stops List with Drag-and-Drop Handles
+    const listEl = document.getElementById('gradientStopsList');
+    if (listEl) {
+        listEl.innerHTML = target.colors.map((color, idx) => `
+            <div class="gradient-stop-item" draggable="true" data-index="${idx}">
+                <div class="stop-drag-handle" title="Sıralamayı değiştirmek için sürükleyin">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+                </div>
+                <div class="stop-left">
+                    <span class="stop-index-tag">#${idx + 1}</span>
+                    <div class="stop-color-input-wrapper" style="background-color: ${color};">
+                        <input type="color" class="stop-color-input" value="${color}" 
+                               onchange="updateGradientColor(${idx}, this.value, false)" 
+                               oninput="updateGradientColor(${idx}, this.value, true)">
+                    </div>
+                    <span class="stop-hex-label">${color}</span>
+                </div>
+                <button type="button" class="stop-delete-btn" onclick="removeGradientColor(${idx})" 
+                        title="${target.colors.length <= 2 ? 'En az 2 renk gereklidir' : 'Rengi Sil'}" 
+                        ${target.colors.length <= 2 ? 'disabled' : ''}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        `).join('');
+
+        initStopDragEvents();
+    }
+
+    // Angle controls
+    const slider = document.getElementById('studioAngleSlider');
+    const badge = document.getElementById('gradStudioAngleBadge');
+    const indicator = document.getElementById('studioAngleDialIndicator');
+    if (slider && parseInt(slider.value, 10) !== target.angle) {
+        slider.value = target.angle;
+    }
+    if (badge) {
+        badge.textContent = `${target.angle}°`;
+    }
+    if (indicator) {
+        indicator.style.transform = `rotate(${target.angle}deg)`;
+    }
+
+    // Angle Preset Buttons
+    document.querySelectorAll('.angle-presets-grid .angle-preset-btn').forEach(btn => {
+        const btnAngle = parseInt(btn.textContent, 10);
+        btn.classList.toggle('active', btnAngle === target.angle);
+    });
+}
+
+// ── Drag and Drop Reordering for Color Stops ──
+let draggedStopIndex = null;
+
+function initStopDragEvents() {
+    const listEl = document.getElementById('gradientStopsList');
+    if (!listEl) return;
+    
+    const items = listEl.querySelectorAll('.gradient-stop-item');
+    items.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            draggedStopIndex = parseInt(item.dataset.index, 10);
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(draggedStopIndex));
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            listEl.querySelectorAll('.gradient-stop-item').forEach(i => i.classList.remove('drag-over'));
+            draggedStopIndex = null;
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            item.classList.add('drag-over');
+        });
+
+        item.addEventListener('dragleave', () => {
+            item.classList.remove('drag-over');
+        });
+
+        item.addEventListener('drop', (e) => {
+            e.preventDefault();
+            item.classList.remove('drag-over');
+            const dropTargetIndex = parseInt(item.dataset.index, 10);
+            if (draggedStopIndex !== null && draggedStopIndex !== dropTargetIndex) {
+                const target = getCurrentGradientTarget();
+                const [movedColor] = target.colors.splice(draggedStopIndex, 1);
+                target.colors.splice(dropTargetIndex, 0, movedColor);
+                applyGradientsToDOM();
+                renderGradientStudio();
+                saveSettings();
+            }
+        });
+    });
+}
+
+// ── Studio Rotatable Dial Event Handlers ──
+let isDraggingStudioAngle = false;
+
+function startStudioAngleDrag(e) {
+    e.preventDefault();
+    isDraggingStudioAngle = true;
+    const dial = document.getElementById('studioAngleDial');
+    if (dial) dial.classList.add('dragging');
+    updateStudioAngleFromEvent(e);
+    
+    window.addEventListener('mousemove', onStudioAngleDragMove);
+    window.addEventListener('mouseup', stopStudioAngleDrag);
+    window.addEventListener('touchmove', onStudioAngleDragMove, { passive: false });
+    window.addEventListener('touchend', stopStudioAngleDrag);
+}
+
+function onStudioAngleDragMove(e) {
+    if (!isDraggingStudioAngle) return;
     if (e.preventDefault) e.preventDefault();
-    updateAngleFromEvent(e);
+    updateStudioAngleFromEvent(e);
 }
 
-function stopAngleDrag() {
-    if (!isDraggingAngle) return;
-    isDraggingAngle = false;
-    const dial = document.getElementById('angleDial');
+function stopStudioAngleDrag() {
+    if (!isDraggingStudioAngle) return;
+    isDraggingStudioAngle = false;
+    const dial = document.getElementById('studioAngleDial');
     if (dial) dial.classList.remove('dragging');
-    window.removeEventListener('mousemove', onAngleDragMove);
-    window.removeEventListener('mouseup', stopAngleDrag);
-    window.removeEventListener('touchmove', onAngleDragMove);
-    window.removeEventListener('touchend', stopAngleDrag);
+    window.removeEventListener('mousemove', onStudioAngleDragMove);
+    window.removeEventListener('mouseup', stopStudioAngleDrag);
+    window.removeEventListener('touchmove', onStudioAngleDragMove);
+    window.removeEventListener('touchend', stopStudioAngleDrag);
 }
 
-function updateAngleFromEvent(e) {
-    const dial = document.getElementById('angleDial');
+function updateStudioAngleFromEvent(e) {
+    const dial = document.getElementById('studioAngleDial');
     if (!dial) return;
     const rect = dial.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -1049,7 +1410,7 @@ function updateAngleFromEvent(e) {
     if (deg < 0) deg += 360;
     if (deg >= 360) deg -= 360;
     
-    setGradientAngle(deg, true);
+    setStudioAngle(deg, true);
 }
 
 // ── Rain Animation & Lightning ──
